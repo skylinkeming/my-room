@@ -1,1 +1,23 @@
-test
+# 日日小屋 · Little Warm Home
+
+React + Three.js 的互動式溫馨小屋，包含臥室、客廳、廚房、餐桌與窗外山景。
+
+## 開發
+
+需要 Node.js 22.12+ 或 24。
+
+```sh
+npm ci
+npm run dev
+```
+
+拖曳旋轉、滾輪縮放；下方按鈕切換空間視角。右上切換日夜，右側切換房間標籤或重設視角。
+
+## 建置
+
+```sh
+npm run build
+npm run preview
+```
+
+所有模型皆以 Three.js 幾何圖形產生，不需要模型檔或 API 金鑰。
