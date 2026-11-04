@@ -42,7 +42,7 @@ function Art({p=[0,0,0],rot=0,botanical=false}){return <group position={p} rotat
 function Chair({p,rot=0,arm=false}){return <group position={p} rotation={[0,rot,0]}><Legs x={arm?.3:.23} z={.23} h={.46}/><Box p={[0,.53,0]} s={[arm?.82:.65,.19,.67]} c="#e8ddc8" r={.12} fabric/><Box p={[0,.88,-.26]} s={[arm?.83:.65,.66,.18]} c="#e8ddc8" r={.12} rot={[-.12,0,0]} fabric/>{arm&&[-1,1].map(a=><Box key={a} p={[a*.37,.71,0]} s={[.15,.3,.68]} c="#e8ddc8" r={.08} fabric/>)}</group>}
 function Rug({p,s,c='#dbccb0'}){return <group position={p}><Box s={s} c={c} fabric r={.025}/>{Array.from({length:18},(_,i)=><Box key={i} p={[-s[0]/2+(i+.5)*s[0]/18,s[1]/2+.001,0]} s={[.012,.004,s[2]-.08]} c="#e9deca" r={.001}/>)}</group>}
 
-function Bedroom({night}){return <group name="bedroom">
+function Bedroom({night}){return <group name="bedroom"><group position={[-.5,0,-1]}>
 <Rug p={[-4.45,.085,-2.85]} s={[3.55,.04,4.25]}/>
 <Box p={[-4.45,.28,-3.23]} s={[2.45,.42,3.2]} c={oak} wood/>
 <Box p={[-4.45,.58,-3.23]} s={[2.48,.3,3.2]} c="#f7eedc" r={.12} fabric/>
@@ -53,13 +53,14 @@ function Bedroom({night}){return <group name="bedroom">
 <Box p={[-4.45,.97,-2.08]} s={[2.54,.08,.65]} c="#e7d7bc" r={.04} fabric/>
 {[-6.2,-2.7].map(x=><group key={x}><Box p={[x,.36,-4.4]} s={[.72,.68,.7]} c={oak} wood/><Box p={[x,.36,-4.03]} s={[.56,.35,.025]} c="#a78254"/><Books p={[x-.2,.15,-4.02]} count={3}/><TableLamp p={[x,.72,-4.4]} night={night}/></group>)}
 <Art p={[-4.45,2.2,-5.39]}/>
+</group>
 {/* Flush full-height storage, clear of the bed and its bedside table. */}
-<group name="wardrobe" position={[-1.2,0,-4.91]}>
+<group name="wardrobe" position={[-1.2,0,-5.91]}>
 <Box p={[0,1.59,0]} s={[2.15,3.12,.95]} c="#dfd5bf"/>
 {[-.79,-.26,.26,.79].map((x,i)=><group key={x}><Box p={[x,1.62,.49]} s={[.515,3.04,.065]} c={i%2?'#e9dfcc':'#eee4d2'}/><Box p={[x+(i%2?-.16:.16),1.6,.54]} s={[.035,.48,.035]} c={brass}/></group>)}
 </group>
 {/* Desk rear edge flush to left wall; seated user faces the wall. */}
-<group name="bedroom-workspace" position={[-6.32,0,3.58]} rotation={[0,Math.PI/2,0]}>
+<group name="bedroom-workspace" position={[-7.32,0,3.58]} rotation={[0,Math.PI/2,0]}>
 <Legs x={1.02} z={.36} h={.78}/><Box p={[0,.85,0]} s={[2.4,.14,.95]} c={oak} wood/>
 <Box p={[.82,.42,0]} s={[.62,.74,.84]} c={oak} wood/>{[.22,.44,.66].map(y=><Box key={y} p={[.82,y,.435]} s={[.47,.025,.025]} c={brass}/>)}
 <Box p={[-.23,.96,-.18]} s={[.45,.06,.28]} c="#c0bfb0"/><Box p={[-.23,1.15,-.24]} s={[.06,.38,.06]} c="#b8b9ad"/>
@@ -77,11 +78,11 @@ function Bedroom({night}){return <group name="bedroom">
 <Box p={[-1.4,.84,.16]} s={[.42,.38,.12]} c={sage} r={.08} fabric/>
 <Cyl p={[-.55,.31,.65]} r={.27} h={.62}/><TableLamp p={[-.55,.63,.65]} night={night}/>
 <FloorLamp p={[-.75,0,-.7]} night={night}/>
-<group name="bookcase" position={[-.36,0,-2.45]} rotation={[0,-Math.PI/2,0]}>
+<group name="bookcase" position={[-.36,0,-3.45]} rotation={[0,-Math.PI/2,0]}>
 <Box p={[0,1.2,-.2]} s={[1.4,2.4,.08]} c={oak} wood/>{[-.69,.69].map(x=><Box key={x} p={[x,1.2,0]} s={[.07,2.4,.43]} c={oak} wood/>)}
 {[.12,.68,1.24,1.8,2.38].map((y,i)=><group key={y}><Box p={[0,y,0]} s={[1.38,.07,.44]} c={oak} wood/>{i<4&&<Books p={[-.52,y+.04,0]} count={i%2?6:4}/>}</group>)}
 </group>
-<Plant p={[-6.5,0,-4.9]} size={1.2} tall/>
+<Plant p={[-7.1,0,-5.9]} size={1.2} tall/>
 </group>}
 
 function TV(){return <group name="living-room-tv" position={[.46,0,.55]} rotation={[0,Math.PI/2,0]}>
@@ -96,8 +97,8 @@ function TV(){return <group name="living-room-tv" position={[.46,0,.55]} rotatio
 <Plant p={[1.14,.76,.03]} size={.45}/>
 </group>}
 function Living({night}){return <group name="living-room">
-<Rug p={[3.05,.085,.65]} s={[4.65,.045,3.7]} c="#e2d5ba"/>
-<group name="sofa" position={[5.05,0,.6]} rotation={[0,-Math.PI/2,0]}>
+<Rug p={[3.55,.085,.65]} s={[5.65,.045,3.7]} c="#e2d5ba"/>
+<group name="sofa" position={[6.05,0,.6]} rotation={[0,-Math.PI/2,0]}>
 <Legs x={1.25} z={.36} h={.2}/><Box p={[0,.45,0]} s={[3.25,.5,1.1]} c="#d8a58c" r={.18} fabric/>
 <Box p={[0,.92,-.47]} s={[3.25,.95,.25]} c="#dfb096" r={.14} fabric/>
 {[-1.5,1.5].map(x=><Box key={x} p={[x,.72,0]} s={[.25,.7,1.16]} c="#e2b49a" r={.12} fabric/>)}
@@ -105,17 +106,17 @@ function Living({night}){return <group name="living-room">
 {[[-1.05,'#f2e8d3'],[-.35,'#a0a77d'],[1,'#f2e8d3']].map(([x,c])=><Box key={x} p={[x,1.07,-.2]} s={[.57,.55,.18]} c={c} r={.09} rot={[-.15,0,x*.12]} fabric/>)}
 <Box p={[1.15,.93,.27]} s={[.55,.07,.7]} c="#ede1c7" fabric/>
 </group>
-<group position={[2.98,0,.6]}><Cyl p={[0,.3,0]} r={.38} h={.6}/><Box p={[0,.65,0]} s={[1.35,.13,1.1]} c={oak} r={.3} wood/><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
+<group position={[3.5,0,.6]}><Cyl p={[0,.3,0]} r={.38} h={.6}/><Box p={[0,.65,0]} s={[1.35,.13,1.1]} c={oak} r={.3} wood/><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
 <TV/>
-<Cyl p={[5,.33,2.8]} r={.35} h={.66}/><TableLamp p={[5,.67,2.8]} night={night}/>
-<FloorLamp p={[6,0,-1.1]} night={night}/>
+<Cyl p={[6,.33,2.8]} r={.35} h={.66}/><TableLamp p={[6,.67,2.8]} night={night}/>
+<FloorLamp p={[7,0,-1.1]} night={night}/>
 {/* Sideboard is against the right wall, away from the doorway. */}
-<group name="sideboard" position={[6.32,0,-1.55]} rotation={[0,-Math.PI/2,0]}>
+<group name="sideboard" position={[7.32,0,-1.55]} rotation={[0,-Math.PI/2,0]}>
 <Box p={[0,.55,0]} s={[2.1,1.05,.65]} c={oak} wood/>{[-.7,0,.7].map(x=><Box key={x} p={[x,.56,.34]} s={[.65,.8,.025]} c="#c79f6d" wood/>)}
 <Vase p={[-.6,1.09,0]} flowers/><TableLamp p={[.5,1.09,0]} night={night}/>
 <Art p={[0,2.1,-.34]} botanical/>
 </group>
-<Plant p={[6.1,0,4.4]} size={1.5} tall/>
+<Plant p={[5.5,0,5.6]} size={1.5} tall/>
 </group>}
 function Pendant({night}){return <group name="dining-pendant" position={[3.15,0,-2.25]}>
 <Cyl p={[0,3.3,0]} r={.1} h={.06} c="#544c39"/><Cyl p={[0,2.94,0]} r={.012} h={.7} c="#544c39"/>
@@ -124,7 +125,7 @@ function Pendant({night}){return <group name="dining-pendant" position={[3.15,0,
 <Ball p={[0,2.44,0]} s={.12} c="#fff0bd"/>
 <pointLight position={[0,2.2,0]} color="#ffd29a" intensity={night?6:1.3} distance={5}/>
 </group>}
-function Kitchen({night}){return <group name="open-kitchen">
+function Kitchen({night}){return <group name="open-kitchen" position={[.4,0,-1]}>
 {[.7,1.65,2.6,3.55,4.5].map((x,i)=><group key={x}><Box p={[x,.48,-4.88]} s={[.92,.9,1.02]} c={sage}/><Box p={[x,.99,-4.88]} s={[.96,.12,1.08]} c="#eee5d0"/><Box p={[x,.68,-4.34]} s={[.28,.025,.035]} c={brass}/></group>)}
 <Box p={[5.71,1.14,-4.84]} s={[1.12,2.23,1.1]} c="#eee7d6" r={.12}/><Box p={[5.71,1.03,-4.26]} s={[1,.025,.025]} c="#c5bba4"/>{[.72,1.4].map(y=><Box key={y} p={[5.35,y,-4.23]} s={[.04,.32,.04]} c={brass}/>)}
 <Box p={[1.65,1.064,-4.85]} s={[.7,.02,.56]} c="#989e8e" r={.1}/><Box p={[1.65,1.24,-5.15]} s={[.035,.36,.035]} c={brass}/><Box p={[1.65,1.4,-5.04]} s={[.035,.035,.26]} c={brass}/>
@@ -143,7 +144,9 @@ function Kitchen({night}){return <group name="open-kitchen">
 </group><Pendant night={night}/>
 <Plant p={[.6,0,-3.85]} size={1.4} tall/>
 </group>}
-function WindowAndLandscape({night}){return <group>
+function WindowAndLandscape(){return <group position={[-1,0,0]}>
+<Box p={[-6.9,1.61,-5.95]} s={[.16,3.2,1]} c="#e9dfca"/>
+<Box p={[-6.9,1.61,5.95]} s={[.16,3.2,1]} c="#e9dfca"/>
 {/* Solid front wall for the desk; opening lies beside the bed. */}
 <Box p={[-6.9,1.61,2.1]} s={[.16,3.2,6.6]} c="#e9dfca"/>
 <Box p={[-6.9,.33,-3.3]} s={[.16,.62,4.2]} c="#e9dfca"/>
@@ -158,24 +161,41 @@ function WindowAndLandscape({night}){return <group>
 </group>)}
 {[-4.75,-1.92].map(z=><mesh key={z} position={[-6.7,1.73,z]}><boxGeometry args={[.025,2.16,.45]}/><meshStandardMaterial color="#fff6e3" transparent opacity={.48} side={THREE.DoubleSide} depthWrite={false}/></mesh>)}
 <Box p={[-6.55,3.13,-3.3]} s={[.035,.035,4.6]} c={brass}/>
-<group name="window-landscape" position={[-9.4,-.12,-3.2]}>
-<Box p={[0,-.1,0]} s={[4.8,.16,6]} c="#acb795" r={.25}/>
-{[[-1.5,0,-1.8,1.4],[-1.3,0,.5,1.8],[0,-.1,2,1.1]].map(([x,y,z,v],i)=><Ball key={i} p={[x,y,z]} s={[v,1.2,v]} c={i%2?'#a5b292':'#b7bea5'}/>)}
-<Plant p={[.8,0,-1.4]} size={1.6} tall/><Plant p={[.7,0,1.6]} size={1.4} tall/>
-<Ball p={[-1.8,2.8,-2.3]} s={.32} c={night?'#f4ebc9':'#f4d79b'}/>
-</group>
+
 </group>}
-export default function House({night,showLabels}){
- const boards=useMemo(()=>Array.from({length:40},(_,i)=>({x:-6.82+i*.35,c:['#d5b185','#ddbb8f','#d9b88d','#e0bf93'][i%4]})),[]);
+
+function GardenDoor({open,onToggle}){return <group name="garden-exit">
+{/* A physical 2.2 m opening in the living-room wall, aligned with the veranda. */}
+<Box p={[7.9,.39,1.15]} s={[.16,.74,2.9]} c="#eee3cc"/>
+<Box p={[7.9,1.61,5.64]} s={[.16,3.2,1.67]} c="#eee3cc"/>
+<Box p={[7.9,3.02,3.7]} s={[.16,.38,2.25]} c="#eee3cc"/>
+{[2.6,4.8].map(z=><Box key={z} p={[7.9,1.43,z]} s={[.23,2.85,.1]} c={oak} wood/>)}
+<Box p={[7.9,2.85,3.7]} s={[.23,.12,2.3]} c={oak} wood/>
+<Box p={[7.9,.04,3.7]} s={[.34,.06,2.25]} c={oak} wood/>
+<group name="garden-door-panel" position={[7.92,0,open?1.48:3.7]} onClick={e=>{e.stopPropagation();onToggle()}}>
+{[2.05,2.7].map(y=><Box key={y} p={[0,y,0]} s={[.08,.08,2.05]} c={oak} wood/>)}
+<Box p={[0,.65,0]} s={[.08,1.2,2.05]} c={oak} wood/>
+{[-1,0,1].map(z=><Box key={z} p={[0,1.42,z]} s={[.08,2.7,.06]} c={oak} wood/>)}
+<mesh position={[0,1.95,0]}><boxGeometry args={[.025,1.4,2]}/><meshStandardMaterial color="#d3e5d5" transparent opacity={.18} roughness={.12} depthWrite={false}/></mesh>
+<Box p={[-.07,1.2,.8]} s={[.07,.35,.045]} c={brass}/>
+</group>
+<Box name="veranda" p={[8.7,-.05,3.7]} s={[1.7,.19,4.25]} c={oak} wood/>
+{Array.from({length:14},(_,i)=><Box key={i} p={[8.7,.055,1.7+i*.3]} s={[1.7,.025,.018]} c="#a27c52"/>)}
+<Box p={[9.65,-.18,3.7]} s={[.35,.17,2.4]} c={oak} wood/>
+<Box p={[10,-.3,3.7]} s={[.35,.14,2.4]} c={oak} wood/>
+</group>}
+
+export default function House({night,showLabels,doorOpen,onDoorToggle}){
+ const boards=useMemo(()=>Array.from({length:46},(_,i)=>({x:-7.85+i*.35,c:['#d5b185','#ddbb8f','#d9b88d','#e0bf93'][i%4]})),[]);
  return <group name="little-warm-home">
-<Box name="foundation" p={[0,-.22,0]} s={[14.1,.4,11.1]} c="#c5a47b" r={.1}/>
-{boards.map(({x,c},i)=><group key={i}>{[0,1,2,3].map(j=><Box key={j} p={[x,.005,-4.1+j*2.73]} s={[.342,.07,2.715]} c={c} r={.005} wood/>)}</group>)}
-<Box p={[0,1.61,-5.45]} s={[14,3.2,.16]} c="#eee3cc"/>
+<Box name="foundation" p={[0,-.22,0]} s={[16.2,.4,13.2]} c="#c5a47b" r={.1}/>
+{boards.map(({x,c},i)=><group key={i}>{[0,1,2,3].map(j=><Box key={j} p={[x,.005,-4.85+j*3.23]} s={[.342,.07,3.215]} c={c} r={.005} wood/>)}</group>)}
+<Box p={[0,1.61,-6.45]} s={[16,3.2,.16]} c="#eee3cc"/>
 <WindowAndLandscape night={night}/>
-<Box p={[6.9,1.61,-2.88]} s={[.16,3.2,5.14]} c="#eee3cc"/>
+<Box p={[7.9,1.61,-3.38]} s={[.16,3.2,6.14]} c="#eee3cc"/>
 {/* Full-height partition with a 1.4 m clear doorway near the front. TV ends at z=1.95. */}
-<Box name="bedroom-partition-back" p={[0,1.61,-1.4]} s={[.2,3.2,8.1]} c="#e9dfca"/>
-<Box name="bedroom-partition-front" p={[0,1.61,4.8]} s={[.2,3.2,1.3]} c="#e9dfca"/>
+<Box name="bedroom-partition-back" p={[0,1.61,-1.9]} s={[.2,3.2,9.1]} c="#e9dfca"/>
+<Box name="bedroom-partition-front" p={[0,1.61,5.3]} s={[.2,3.2,2.3]} c="#e9dfca"/>
 <Box p={[0,2.94,3.4]} s={[.2,.54,1.5]} c="#e9dfca"/>
 {[2.65,4.15].map(z=><Box key={z} p={[0,1.34,z]} s={[.25,2.66,.1]} c={oak} wood/>)}
 <Box p={[0,2.66,3.4]} s={[.25,.12,1.6]} c={oak} wood/>
@@ -184,7 +204,7 @@ export default function House({night,showLabels}){
 {[.72,1.95].map(y=><Box key={y} p={[.044,y,-.7]} s={[.015,1.08,1.12]} c="#cfab79"/>)}
 <Box p={[.08,1.3,-1.2]} s={[.13,.04,.2]} c={brass}/>
 </group>
-<Bedroom night={night}/><Living night={night}/><Kitchen night={night}/>
+<Bedroom night={night}/><Living night={night}/><Kitchen night={night}/><GardenDoor open={doorOpen} onToggle={onDoorToggle}/>
 {showLabels&&[[-3.7,2,-1,'寢室・閱讀與工作 BEDROOM'],[3.2,2,.2,'客廳・開放式廚房 LIVING & KITCHEN']].map(([x,y,z,t])=><Html key={t} position={[x,y,z]} center distanceFactor={15}><div className="room-label">{t}</div></Html>)}
 </group>;
 }

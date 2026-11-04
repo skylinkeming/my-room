@@ -8,3 +8,8 @@
 .night .scene-tag{color:#c1c9ae}
 
 @media(max-width:560px){.scene{inset:29% -12% 13% -12%}}
+
+.garden-link{border:1px solid #c6b99b;border-radius:18px;background:#faf4e6ef;color:#657352;padding:7px 14px;white-space:nowrap;font-size:11px;box-shadow:0 3px 12px #38432b15}
+.night .garden-link{background:#495344;color:#eee6cd;border-color:#7e886e}
+.view-tools{top:41%}
+@media(max-width:560px){nav button{padding:10px 9px;gap:4px;font-size:9px}nav button>span{font-size:15px}.view-tools{top:37%;gap:7px}.view-tools button{width:31px;height:31px;font-size:19px}.garden-link{font-size:9px;padding:5px 9px}}
