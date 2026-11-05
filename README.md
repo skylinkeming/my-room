@@ -32,3 +32,9 @@ npm run preview
 ```
 
 `src/House.jsx` 包含房屋與家具模型；`src/Garden.jsx` 包含庭園、橋與流水；`src/main.jsx` 負責頁面、燈光與視角操作。所有家具、木紋、布紋及窗外景觀均由程式產生，不需要外部模型、貼圖服務或 API 金鑰。場景為可互動的風格化 3D 實作，非設計稿的靜態背景圖片。
+
+## GitHub Pages 部署
+
+網站發布位置為 https://skylinkeming.github.io/my-room/ 。Vite 的 `base` 已設定為 `/my-room/`，以便正確讀取 JavaScript、CSS 與其他資源。
+
+在儲存庫的 **Settings → Pages → Build and deployment → Source** 選擇 **GitHub Actions**。之後推送至 `main` 便會自動建置並部署，也可以從 **Actions → Deploy to GitHub Pages → Run workflow** 手動發布。部署成功後可在該次執行的 `github-pages` environment 查看網址。
