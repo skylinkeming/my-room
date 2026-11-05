@@ -40,19 +40,29 @@ function Lantern({p,night=false}){return <group position={p}>
 </group>}
 
 export function makeStream(){return new THREE.CatmullRomCurve3([[17,-.4,-14],[18,-.4,-8],[20,-.4,-1],[20,-.4,7],[19,-.4,14],[20,-.4,22],[24,-.4,29.8]].map(p=>new THREE.Vector3(...p)))}
-function Stream({flowing}){
+function Stream({flowing,night}){
  const curve=useMemo(makeStream,[]), material=useRef(),{invalidate}=useThree();
  const geometry=useMemo(()=>{
  const n=180,positions=[],uv=[],indices=[];
  for(let i=0;i<=n;i++){const t=i/n,p=curve.getPoint(t),d=curve.getTangent(t);const width=.9+.18*Math.sin(t*19);for(const side of [-1,1]){positions.push(p.x-d.z*side*width,p.y,p.z+d.x*side*width);uv.push(t,side*.5+.5)}if(i<n){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2)}}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
  },[curve]);
- const uniforms=useMemo(()=>({time:{value:0}}),[]);
+ const uniforms=useMemo(()=>({time:{value:0},light:{value:1}}),[]);
+ useEffect(()=>{uniforms.light.value=night?.22:1;invalidate()},[night,uniforms,invalidate]);
  useEffect(()=>{if(!flowing)return;const timer=setInterval(()=>{if(document.visibilityState==='visible')invalidate()},125);return()=>clearInterval(timer)},[flowing,invalidate]);
  useEffect(()=>()=>geometry.dispose(),[geometry]);
  useFrame((_,dt)=>{if(flowing&&material.current)material.current.uniforms.time.value+=Math.min(dt,.2)});
  return <mesh name="flowing-stream" geometry={geometry}>
- <shaderMaterial ref={material} uniforms={uniforms} side={THREE.DoubleSide} vertexShader={`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`} fragmentShader={`varying vec2 vUv;uniform float time;void main(){float flow=sin(vUv.x*520.-time*3.+sin(vUv.y*15.+vUv.x*80.)*.3);float ripple=pow(max(0.,flow),18.)*.09;float edge=smoothstep(.28,.5,abs(vUv.y-.5));vec3 water=mix(vec3(.29,.49,.44),vec3(.53,.66,.57),edge);water+=ripple*vec3(.8,.86,.7);gl_FragColor=vec4(water,1.);}`} />
+ <shaderMaterial transparent ref={material} uniforms={uniforms} side={THREE.DoubleSide} vertexShader={`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`} fragmentShader={`varying vec2 vUv;uniform float time;uniform float light;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+void main(){
+vec2 grid=vec2(vUv.x*310.,vUv.y*7.);vec2 cell=floor(grid),f=fract(grid)-.5;float h=hash(cell);float pebble=1.-smoothstep(.2,.46,length(f*vec2(.85,1.1)));vec3 rock=mix(vec3(.39,.38,.28),vec3(.67,.64,.49),h);vec3 bed=mix(vec3(.34,.38,.28),rock,pebble);vec3 water=mix(bed,vec3(.35,.52,.43),.35);
+float flow=sin(vUv.x*420.-time*2.2+sin(vUv.y*12.+vUv.x*90.)*.4);float ripple=pow(max(0.,flow),24.)*.07;
+water+=ripple*vec3(.8,.85,.65);float alpha=1.-smoothstep(.38,.5,abs(vUv.y-.5));gl_FragColor=vec4(water*light,alpha);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+
+}`} />
  </mesh>;
 }
 function Bridge(){const rails=useMemo(()=>[-.7,.7].map(z=>Array.from({length:15},(_,i)=>{const t=i/14;return [-1.65+t*3.3,.75+.5*Math.sin(t*Math.PI),z]})),[]);return <group name="garden-bridge" position={[19,level+.12,14]}>
@@ -68,23 +78,23 @@ function Basin(){return <group name="tsukubai-basin" position={[22.8,level,22]}>
 <Block p={[-.09,.95,0]} s={[.014,.48,.014]} c="#b6d7c8"/>
 </group>}
 function Gravel(){return <group name="raked-gravel" position={[-20.5,level+.018,3.8]}>
-<mesh rotation={[-Math.PI/2,0,0]}><planeGeometry args={[5.4,4.6]}/><meshStandardMaterial color="#c6c2ad" roughness={1}/></mesh>
+<mesh rotation={[-Math.PI/2,0,0]} scale={[1,.8,1]}><circleGeometry args={[2.4,64]}/><meshStandardMaterial color="#c6c2ad" roughness={1}/></mesh>
 {Array.from({length:12},(_,i)=><mesh key={i} rotation={[-Math.PI/2,0,.25]} position={[0,.018,0]} scale={[1,.7,1]}><torusGeometry args={[.4+i*.15,.009,3,64]}/><meshStandardMaterial color="#a9aa96"/></mesh>)}
-<Ellipsoid p={[0,.18,0]} s={[.65,.55,.4]} c="#7f8b79"/><Ellipsoid p={[-.55,.12,.25]} s={[.36,.29,.3]} c="#a0a593"/>
+<Ellipsoid p={[0,.18,0]} s={[.65,.55,.4]} c="#7f8b79"/><Ellipsoid p={[-.55,.12,.25]} s={[.36,.29,.3]} c="#a0a593"/><Ellipsoid p={[.6,.1,.4]} s={[.32,.22,.28]} c="#989e89"/>
 </group>}
 // A lawn with softly varying grass color, shared across the expanded property.
 function Lawn(){
  const texture=useMemo(()=>{
-  const n=256,data=new Uint8Array(n*n*4);
+  const n=512,data=new Uint8Array(n*n*4);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
    const a=Math.sin(x*12.9898+y*78.233)*43758.5453,noise=a-Math.floor(a);
-   const wave=Math.sin(x*.045+Math.cos(y*.037))*7+Math.sin(y*.057)*5;
-   const i=(y*n+x)*4;data[i]=121+wave+noise*23;data[i+1]=139+wave+noise*23;data[i+2]=79+wave+noise*17;data[i+3]=255;
+   const wave=Math.sin(x*.018+Math.cos(y*.016))*8+Math.sin(y*.027)*5;
+   const i=(y*n+x)*4;data[i]=119+wave+noise*5;data[i+1]=136+wave+noise*5;data[i+2]=72+wave+noise*4;data[i+3]=255;
   }
-  const t=new THREE.DataTexture(data,n,n);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,4);t.needsUpdate=true;return t;
+  const t=new THREE.DataTexture(data,n,n);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,1);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;
  },[]);
  useEffect(()=>()=>texture.dispose(),[texture]);
- return <mesh name="open-lawn" rotation={[-Math.PI/2,0,0]} position={[0,level+.005,7]} receiveShadow><planeGeometry args={[51.8,45.8]}/><meshStandardMaterial map={texture} bumpMap={texture} bumpScale={.035} roughness={1}/></mesh>;
+ return <mesh name="open-lawn" rotation={[-Math.PI/2,0,0]} position={[0,level+.005,7]} receiveShadow><planeGeometry args={[51.8,45.8]}/><meshStandardMaterial map={texture} bumpMap={texture} bumpScale={.012} roughness={1}/></mesh>;
 }
 function Branch({from,to,r=.04}){const {mid,q,length}=useMemo(()=>{const a=new THREE.Vector3(...from),b=new THREE.Vector3(...to),d=b.clone().sub(a);return{mid:a.add(b).multiplyScalar(.5),q:new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),length:d.length()}},[from,to]);return <mesh position={mid} quaternion={q} castShadow><cylinderGeometry args={[r*.5,r,length,7]}/><meshStandardMaterial color="#796044" roughness={1}/></mesh>}
 // Individual blossom clusters and petals avoid the solid spherical tree canopies.
@@ -141,7 +151,7 @@ export default function Garden({night,flowing,showLabels}){
  return <group name="kyoto-garden">
  <Block p={[0,-.7,7]} s={[52,.5,46]} c="#9ca37b"/><Lawn/>
  <Stones items={moss} name="moss-islands"/><Stones items={banks} name="stream-banks"/><Stones items={path} name="garden-path"/>
- <Stream flowing={flowing}/><Bridge/><Gravel/><Basin/>
+ <Stream flowing={flowing} night={night}/><Bridge/><Gravel/><Basin/>
  <Pine p={[-22,level,-1]} size={2.1}/>
  <Maple p={[22,level,-12.3]} size={1.65}/><Bench/>
  <Cherry name="cherry-foreground-left" p={[-18,level,24]} size={1.7}/>
@@ -149,10 +159,10 @@ export default function Garden({night,flowing,showLabels}){
  <Bamboo p={[-12,level,-14.2]} count={6}/><Bamboo p={[17,level,-14.2]} count={6}/>
  <Lantern p={[-21.8,level,1.4]} night={night}/>
  {/* Low boundary planting is restrained; the central foreground stays empty. */}
- {[-21,-15,-7,1,8,15,22].map((x,i)=><Ellipsoid key={x} p={[x,level+.1,-14.8]} s={[1.4,.24,.55]} c={i%2?'#879662':'#98a274'}/>)}
+ {[-21,-15,-7,1,8,15,22].map((x,i)=><Foliage key={x} p={[x,level+.1,-14.8]} s={[1.4,.24,.55]} c={i%2?'#879662':'#98a274'}/>)}
  <Block p={[0,.35,-15.5]} s={[51,1.5,.16]} c="#e1d6bc"/><Block p={[0,1.14,-15.5]} s={[51,.12,.36]} c="#6b7461"/>
  <Block p={[-25.5,.35,4]} s={[.16,1.5,39]} c="#e1d6bc"/><Block p={[-25.5,1.14,4]} s={[.36,.12,39]} c="#6b7461"/>
  <Block p={[25.5,.35,4]} s={[.16,1.5,39]} c="#e1d6bc"/><Block p={[25.5,1.14,4]} s={[.36,.12,39]} c="#6b7461"/>
- {showLabels&&<Html position={[19,1.7,14]} center distanceFactor={26}><div className="room-label">櫻庭・小橋流水 SAKURA GARDEN</div></Html>}
+ <Html position={[19,1.7,14]} center distanceFactor={26} style={{display:showLabels?'block':'none'}}><div className="room-label">櫻庭・小橋流水 SAKURA GARDEN</div></Html>
  </group>;
 }

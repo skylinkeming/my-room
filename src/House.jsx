@@ -12,13 +12,13 @@ function surfaceTexture(wood=false){
     const v=wood?150+35*Math.sin(y*.7+Math.sin(x*.04)*2)+20*(noise-Math.floor(noise)):150+45*((x+y)%2)+30*(noise-Math.floor(noise));
     const i=(y*n+x)*4;data[i]=data[i+1]=data[i+2]=v;data[i+3]=255;
   }
-  const t=new THREE.DataTexture(data,n,n);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(wood?2:12,wood?2:12);t.needsUpdate=true;return t;
+  const t=new THREE.DataTexture(data,n,n);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(wood?2:12,wood?2:12);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;
 }
 const grain=surfaceTexture(true), weave=surfaceTexture();
 function Box({p=[0,0,0],s=[1,1,1],c=cream,r=.035,rot,wood=false,fabric=false,...rest}){
-  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} roughness={fabric?1:.76} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
+  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} roughness={fabric?1:wood?.65:.78} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
 }
-function Ball({p=[0,0,0],s=1,c=cream,fabric=false}){return <mesh position={p} scale={Array.isArray(s)?s:[s,s,s]} castShadow receiveShadow><sphereGeometry args={[1,20,16]}/><meshStandardMaterial color={c} roughness={.92} bumpMap={fabric?weave:null} bumpScale={.025}/></mesh>}
+function Ball({p=[0,0,0],s=1,c=cream,fabric=false,glow=false}){return <mesh position={p} scale={Array.isArray(s)?s:[s,s,s]} castShadow receiveShadow><sphereGeometry args={[1,20,16]}/><meshStandardMaterial color={c} roughness={.92} emissive={glow?'#ffd298':'#000000'} emissiveIntensity={glow?.65:0} bumpMap={fabric?weave:null} bumpScale={.025}/></mesh>}
 function Cyl({p=[0,0,0],r=.15,h=.3,c=oak,rt,rot}){return <mesh position={p} rotation={rot} castShadow receiveShadow><cylinderGeometry args={[rt??r,r,h,24]}/><meshStandardMaterial color={c} roughness={.75}/></mesh>}
 function Glow({p,s,c='#ffe1a2',strength=1.1}){return <mesh position={p}><boxGeometry args={s}/><meshStandardMaterial color={c} emissive={c} emissiveIntensity={strength}/></mesh>}
 function Legs({x=.5,z=.3,h=.7}){return [-1,1].flatMap(a=>[-1,1].map(b=><Box key={`${a}${b}`} p={[a*x,h/2,b*z]} s={[.065,h,.065]} c={oak} wood/>))}
@@ -36,24 +36,35 @@ function Plant({p=[0,0,0],size=1,tall=false}){return <group position={p} scale={
 </group>}
 function Books({p=[0,0,0],count=5}){return <group position={p}>{Array.from({length:count},(_,i)=><Box key={i} p={[i*.095, .16+(i%2)*.02,0]} s={[.065,.32+(i%2)*.04,.22]} c={['#cdb99a','#9aa388','#ece1cb','#b6937c'][i%4]} wood/>)}</group>}
 function Vase({p=[0,0,0],flowers=false}){return <group position={p}><Ball p={[0,.15,0]} s={[.15,.19,.15]} c="#e8ddc5"/><Cyl p={[0,.31,0]} r={.055} h={.12} c="#e8ddc5"/>{Array.from({length:7},(_,i)=><group key={i} rotation={[0,i*2.4,0]}><Box p={[.07,.48+i*.025,0]} s={[.012,.45,.012]} c="#7b8860" rot={[0,0,-.3]}/>{flowers?<Ball p={[.13,.7+i*.025,0]} s={.07} c={i%2?'#d29d7d':'#ecbc97'}/>:<Ball p={[.13,.64+i*.025,0]} s={[.12,.04,.06]} c="#7b8f62"/>}</group>)}</group>}
-function TableLamp({p=[0,0,0],night=false}){return <group position={p}><Cyl p={[0,.04,0]} r={.13} h={.08} c={brass}/><Cyl p={[0,.18,0]} r={.035} h={.3} c={brass}/><Ball p={[0,.37,0]} s={[.18,.22,.18]} c="#f9dfac"/><pointLight position={[0,.4,0]} color="#ffd092" intensity={night?2:.3} distance={2.5}/></group>}
+function TableLamp({p=[0,0,0],night=false}){return <group position={p}><Cyl p={[0,.04,0]} r={.13} h={.08} c={brass}/><Cyl p={[0,.18,0]} r={.035} h={.3} c={brass}/><Ball glow p={[0,.37,0]} s={[.18,.22,.18]} c="#f9dfac"/><pointLight position={[0,.4,0]} color="#ffd092" intensity={night?2:.3} distance={2.5}/></group>}
 function FloorLamp({p=[0,0,0],night=false}){return <group position={p}><Cyl p={[0,.035,0]} r={.23} h={.07} c={brass}/><Cyl p={[0,.9,0]} r={.022} h={1.8} c={brass}/><Box p={[.18,1.78,0]} s={[.4,.028,.028]} c={brass}/><Cyl p={[.35,1.62,0]} r={.23} rt={.18} h={.35} c="#f1d9ac"/><pointLight position={[.35,1.5,0]} color="#ffd69d" intensity={night?3:.4} distance={3}/></group>}
 function Art({p=[0,0,0],rot=0,botanical=false}){return <group position={p} rotation={[0,rot,0]}><Box s={[1.35,.98,.07]} c={oak} wood/><Box p={[0,0,.043]} s={[1.22,.85,.015]} c="#eee2c7"/>{botanical?[0,1,2].map(i=><group key={i} position={[-.33+i*.32,-.05,.06]}><Box s={[.018,.54,.008]} c="#a27a54" rot={[0,0,.15-i*.15]}/>{[0,1,2].map(j=><Ball key={j} p={[(j%2?1:-1)*.08,-.12+j*.16,.01]} s={[.1,.045,.008]} c="#b28f69"/>)}</group>):<><Ball p={[.3,.18,.06]} s={[.13,.13,.008]} c="#d4b483"/><Ball p={[-.25,-.24,.065]} s={[.34,.25,.008]} c="#b2b59b"/><Ball p={[.26,-.29,.07]} s={[.34,.2,.008]} c="#8e9e82"/></>}</group>}
 function Chair({p,rot=0,arm=false}){return <group position={p} rotation={[0,rot,0]}><Legs x={arm?.3:.23} z={.23} h={.46}/><Box p={[0,.53,0]} s={[arm?.82:.65,.19,.67]} c="#e8ddc8" r={.12} fabric/><Box p={[0,.88,-.26]} s={[arm?.83:.65,.66,.18]} c="#e8ddc8" r={.12} rot={[-.12,0,0]} fabric/>{arm&&[-1,1].map(a=><Box key={a} p={[a*.37,.71,0]} s={[.15,.3,.68]} c="#e8ddc8" r={.08} fabric/>)}</group>}
 function Rug({p,s,c='#dbccb0'}){return <group position={p}><Box s={s} c={c} fabric r={.025}/>{Array.from({length:18},(_,i)=><Box key={i} p={[-s[0]/2+(i+.5)*s[0]/18,s[1]/2+.001,0]} s={[.012,.004,s[2]-.08]} c="#e9deca" r={.001}/>)}</group>}
 
-function Bedroom({night}){return <group name="bedroom"><group position={[-.5,0,-1]}>
-<Rug p={[-4.45,.085,-2.85]} s={[3.55,.04,4.25]}/>
-<Box p={[-4.45,.28,-3.23]} s={[2.45,.42,3.2]} c={oak} wood/>
-<Box p={[-4.45,.58,-3.23]} s={[2.48,.3,3.2]} c="#f7eedc" r={.12} fabric/>
-<Box p={[-4.45,1.02,-4.87]} s={[2.65,1.45,.2]} c="#d6c3a3" r={.13} fabric/>
-<Box p={[-4.45,.82,-2.8]} s={[2.52,.23,2.35]} c={sage} r={.13} fabric/>
-{[-5.04,-3.86].map(x=><Box key={x} p={[x,.84,-4.38]} s={[1.02,.24,.64]} c="#f6f0df" r={.13} fabric/>)}
-{[-4.85,-4.05].map(x=><Box key={x} p={[x,1.04,-4.12]} s={[.67,.49,.19]} c="#a1aa87" r={.09} rot={[-.2,0,.05]} fabric/>)}
-<Box p={[-4.45,.97,-2.08]} s={[2.54,.08,.65]} c="#e7d7bc" r={.04} fabric/>
-{[-6.2,-2.7].map(x=><group key={x}><Box p={[x,.36,-4.4]} s={[.72,.68,.7]} c={oak} wood/><Box p={[x,.36,-4.03]} s={[.56,.35,.025]} c="#a78254"/><Books p={[x-.2,.15,-4.02]} count={3}/><TableLamp p={[x,.72,-4.4]} night={night}/></group>)}
-<Art p={[-4.45,2.2,-5.39]}/>
-</group>
+// Deformed cloth surfaces give the duvet and throw actual folds and draped edges.
+function Cloth({p,s,c,drop=.2,name}){
+ const geometry=useMemo(()=>{const n=48,m=32,pos=[],uv=[],indices=[];
+ for(let j=0;j<=m;j++)for(let i=0;i<=n;i++){const u=i/n,v=j/m,x=(u-.5)*s[0],z=(v-.5)*s[2];const edge=Math.pow(Math.abs(u-.5)*2,12)*drop;const foot=Math.pow(v,16)*drop*.5;const fold=.026*Math.sin(x*9+z*2)+.012*Math.cos(z*21+x*3)+.018*Math.sin(x*17-z*5);pos.push(x,fold-edge-foot,z);uv.push(u*2,v*2);if(i<n&&j<m){let a=j*(n+1)+i;indices.push(a,a+n+1,a+1,a+1,a+n+1,a+n+2)}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g},[s[0],s[2],drop]);
+ React.useEffect(()=>()=>geometry.dispose(),[geometry]);
+ return <mesh name={name} position={p} geometry={geometry} castShadow receiveShadow><meshStandardMaterial color={c} roughness={1} side={THREE.DoubleSide} bumpMap={weave} bumpScale={.014}/></mesh>;
+}
+function Curtain({p,width,height=2.95,sheer=false}){
+ const geometry=useMemo(()=>{const n=32,m=8,pos=[],uv=[],indices=[];for(let j=0;j<=m;j++)for(let i=0;i<=n;i++){const u=i/n,v=j/m;pos.push(Math.sin(u*Math.PI*10)*.055,(v-.5)*height,(u-.5)*width);uv.push(u,v);if(i<n&&j<m){const a=j*(n+1)+i;indices.push(a,a+1,a+n+1,a+1,a+n+2,a+n+1)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g},[width,height]);
+ React.useEffect(()=>()=>geometry.dispose(),[geometry]);return <mesh name={sheer?'sheer-curtain':'folded-curtain'} position={p} geometry={geometry} castShadow={!sheer} receiveShadow><meshStandardMaterial color={sheer?'#fff5df':'#e7d8bc'} roughness={1} side={THREE.DoubleSide} transparent={sheer} opacity={sheer?.42:1} depthWrite={!sheer} bumpMap={weave} bumpScale={.009}/></mesh>;
+}
+function Bedroom({night}){return <group name="bedroom">
+<Rug p={[-4.7,.085,-3.4]} s={[4.15,.04,4.95]}/>
+<Box name="bed-frame" p={[-4.7,.29,-3.85]} s={[3.08,.46,4]} c={oak} wood r={.1}/>
+<Box p={[-4.7,.63,-3.85]} s={[3.12,.3,4]} c="#f7eedc" r={.14} fabric/>
+<Box p={[-4.7,1.13,-5.89]} s={[3.28,1.65,.22]} c="#d6c3a3" r={.2} fabric/>
+<Cloth name="draped-duvet" p={[-4.7,.99,-3.22]} s={[3.24,.1,2.95]} c={sage} drop={.23}/>
+{[-5.45,-3.95].map(x=><Box key={x} p={[x,.9,-5.25]} s={[1.3,.28,.78]} c="#f6f0df" r={.13} fabric/>)}
+{[-5.2,-4.2].map(x=><Box key={x} p={[x,1.15,-4.96]} s={[.79,.62,.22]} c="#a1aa87" r={.1} rot={[-.2,0,.05]} fabric/>)}
+<Cloth name="draped-throw" p={[-4.7,1.04,-2.25]} s={[3.29,.06,.83]} c="#e7d7bc" drop={.3}/>
+{[-6.8,-2.6].map(x=><group key={x}><Box p={[x,.36,-5.2]} s={[.72,.68,.7]} c={oak} wood/><Box p={[x,.36,-4.83]} s={[.56,.35,.025]} c="#a78254"/><Books p={[x-.2,.15,-4.82]} count={3}/><TableLamp p={[x,.72,-5.2]} night={night}/></group>)}
+<Art p={[-4.7,2.4,-6.39]}/>
 {/* Flush full-height storage, clear of the bed and its bedside table. */}
 <group name="wardrobe" position={[-1.2,0,-5.91]}>
 <Box p={[0,1.59,0]} s={[2.15,3.12,.95]} c="#dfd5bf"/>
@@ -98,15 +109,15 @@ function TV(){return <group name="living-room-tv" position={[.46,0,.55]} rotatio
 </group>}
 function Living({night}){return <group name="living-room">
 <Rug p={[3.55,.085,.65]} s={[5.65,.045,3.7]} c="#e2d5ba"/>
-<group name="sofa" position={[6.05,0,.6]} rotation={[0,-Math.PI/2,0]}>
-<Legs x={1.25} z={.36} h={.2}/><Box p={[0,.45,0]} s={[3.25,.5,1.1]} c="#d8a58c" r={.18} fabric/>
-<Box p={[0,.92,-.47]} s={[3.25,.95,.25]} c="#dfb096" r={.14} fabric/>
-{[-1.5,1.5].map(x=><Box key={x} p={[x,.72,0]} s={[.25,.7,1.16]} c="#e2b49a" r={.12} fabric/>)}
-{[-.99,0,.99].map(x=><Box key={x} p={[x,.76,.04]} s={[.94,.21,.88]} c="#e9bfa5" r={.12} fabric/>)}
+<group name="sofa" position={[5.55,0,.6]} rotation={[0,-Math.PI/2,0]}>
+<Legs x={1.25} z={.36} h={.2}/><Box p={[0,.45,0]} s={[3.8,.55,1.25]} c="#d8a58c" r={.18} fabric/>
+<Box p={[0,1,-.5]} s={[3.8,1,.3]} c="#dfb096" r={.14} fabric/>
+{[-1.8,1.8].map(x=><Box key={x} p={[x,.72,0]} s={[.3,.78,1.3]} c="#e2b49a" r={.12} fabric/>)}
+{[-1.17,0,1.17].map(x=><Box key={x} p={[x,.82,.04]} s={[1.1,.28,1]} c="#e9bfa5" r={.12} fabric/>)}
 {[[-1.05,'#f2e8d3'],[-.35,'#a0a77d'],[1,'#f2e8d3']].map(([x,c])=><Box key={x} p={[x,1.07,-.2]} s={[.57,.55,.18]} c={c} r={.09} rot={[-.15,0,x*.12]} fabric/>)}
 <Box p={[1.15,.93,.27]} s={[.55,.07,.7]} c="#ede1c7" fabric/>
 </group>
-<group position={[3.5,0,.6]}><Cyl p={[0,.3,0]} r={.38} h={.6}/><Box p={[0,.65,0]} s={[1.35,.13,1.1]} c={oak} r={.3} wood/><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
+<group name="oval-coffee-table" position={[3.15,0,.6]}><Cyl p={[0,.3,0]} r={.43} h={.6}/><group scale={[1.15,1,.85]}><Cyl p={[0,.66,0]} r={.82} h={.14}/></group><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
 <TV/>
 <Cyl p={[6,.33,2.8]} r={.35} h={.66}/><TableLamp p={[6,.67,2.8]} night={night}/>
 <FloorLamp p={[7,0,-1.1]} night={night}/>
@@ -155,11 +166,9 @@ function WindowAndLandscape(){return <group position={[-1,0,0]}>
 {[-5.25,-3.3,-1.35].map(z=><Box key={z} p={[-6.79,1.75,z]} s={[.12,2.2,.06]} c={oak} wood/>)}
 {[.65,2.85].map(y=><Box key={y} p={[-6.79,y,-3.3]} s={[.17,.08,4]} c={oak} wood/>)}
 <Box p={[-6.7,.61,-3.3]} s={[.36,.1,4.18]} c={oak} wood/>
-{/* Oatmeal blackout drapes plus translucent voile, independently modeled folds. */}
-{[-5.19,-1.77].map(z=><group key={z}>
-{Array.from({length:6},(_,i)=><Box key={i} p={[-6.58,1.65,z+i*.07]} s={[.12,2.9,.1]} c={i%2?'#d8c7a9':'#e6d7bb'} r={.05} fabric/>)}
-</group>)}
-{[-4.75,-1.92].map(z=><mesh key={z} position={[-6.7,1.73,z]}><boxGeometry args={[.025,2.16,.45]}/><meshStandardMaterial color="#fff6e3" transparent opacity={.48} side={THREE.DoubleSide} depthWrite={false}/></mesh>)}
+{/* Soft folded cloth, with a translucent inner layer beside each curtain. */}
+<Curtain p={[-6.58,1.63,-5.05]} width={.7}/><Curtain p={[-6.58,1.63,-1.52]} width={.7}/>
+<Curtain p={[-6.7,1.7,-4.58]} width={.6} height={2.2} sheer/><Curtain p={[-6.7,1.7,-1.99]} width={.6} height={2.2} sheer/>
 <Box p={[-6.55,3.13,-3.3]} s={[.035,.035,4.6]} c={brass}/>
 
 </group>}
@@ -174,9 +183,9 @@ function GardenDoor({open,onToggle}){return <group name="garden-exit">
 <Box p={[7.9,.04,3.7]} s={[.34,.06,2.25]} c={oak} wood/>
 <group name="garden-door-panel" position={[7.92,0,open?1.48:3.7]} onClick={e=>{e.stopPropagation();onToggle()}}>
 {[2.05,2.7].map(y=><Box key={y} p={[0,y,0]} s={[.08,.08,2.05]} c={oak} wood/>)}
-<Box p={[0,.65,0]} s={[.08,1.2,2.05]} c={oak} wood/>
+<Box p={[0,.1,0]} s={[.08,.12,2.05]} c={oak} wood/>
 {[-1,0,1].map(z=><Box key={z} p={[0,1.42,z]} s={[.08,2.7,.06]} c={oak} wood/>)}
-<mesh position={[0,1.95,0]}><boxGeometry args={[.025,1.4,2]}/><meshStandardMaterial color="#d3e5d5" transparent opacity={.18} roughness={.12} depthWrite={false}/></mesh>
+<mesh position={[0,1.42,0]}><boxGeometry args={[.025,2.5,2]}/><meshStandardMaterial color="#d3e5d5" transparent opacity={.18} roughness={.12} depthWrite={false}/></mesh>
 <Box p={[-.07,1.2,.8]} s={[.07,.35,.045]} c={brass}/>
 </group>
 <Box name="veranda" p={[8.7,-.05,3.7]} s={[1.7,.19,4.25]} c={oak} wood/>
@@ -204,7 +213,8 @@ export default function House({night,showLabels,doorOpen,onDoorToggle}){
 {[.72,1.95].map(y=><Box key={y} p={[.044,y,-.7]} s={[.015,1.08,1.12]} c="#cfab79"/>)}
 <Box p={[.08,1.3,-1.2]} s={[.13,.04,.2]} c={brass}/>
 </group>
+<Box p={[-3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/>
 <Bedroom night={night}/><Living night={night}/><Kitchen night={night}/><GardenDoor open={doorOpen} onToggle={onDoorToggle}/>
-{showLabels&&[[-3.7,2,-1,'寢室・閱讀與工作 BEDROOM'],[3.2,2,.2,'客廳・開放式廚房 LIVING & KITCHEN']].map(([x,y,z,t])=><Html key={t} position={[x,y,z]} center distanceFactor={15}><div className="room-label">{t}</div></Html>)}
+{[[-3.7,2,-1,'寢室・閱讀與工作 BEDROOM'],[3.2,2,.2,'客廳・開放式廚房 LIVING & KITCHEN']].map(([x,y,z,t])=><Html key={t} position={[x,y,z]} center distanceFactor={15} style={{display:showLabels?'block':'none'}}><div className="room-label">{t}</div></Html>)}
 </group>;
 }
