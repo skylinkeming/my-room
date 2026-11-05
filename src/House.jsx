@@ -179,7 +179,7 @@ function WindowAndLandscape(){return <group position={[-1,0,0]}>
 
 function GardenDoor({open,onToggle}){return <group name="garden-exit">
 {/* A physical 2.2 m opening in the living-room wall, aligned with the veranda. */}
-<Box p={[7.9,.39,1.15]} s={[.16,.74,2.9]} c="#eee3cc"/>
+<Box name="garden-door-side-wall" p={[7.9,1.61,1.15]} s={[.16,3.2,2.9]} c="#eee3cc"/>
 <Box p={[7.9,1.61,5.64]} s={[.16,3.2,1.67]} c="#eee3cc"/>
 <Box p={[7.9,3.02,3.7]} s={[.16,.38,2.25]} c="#eee3cc"/>
 {[2.6,4.8].map(z=><Box key={z} p={[7.9,1.43,z]} s={[.23,2.85,.1]} c={oak} wood/>)}
