@@ -13,3 +13,16 @@
 .night .garden-link{background:#495344;color:#eee6cd;border-color:#7e886e}
 .view-tools{top:41%}
 @media(max-width:560px){nav button{padding:10px 9px;gap:4px;font-size:9px}nav button>span{font-size:15px}.view-tools{top:37%;gap:7px}.view-tools button{width:31px;height:31px;font-size:19px}.garden-link{font-size:9px;padding:5px 9px}}
+
+.view-mode{display:flex;padding:4px;border:1px solid #d9d4c4;background:#faf7eec9;border-radius:24px;gap:3px;flex-shrink:0}
+.view-mode button{border:0;background:none;color:#8a8c79;border-radius:18px;padding:8px 13px;font-size:10px;letter-spacing:1px;white-space:nowrap}
+.view-mode button.selected{background:#859174;color:#fff}
+.night .view-mode{background:#465044;border-color:#68745d}
+.night .view-mode button{color:#dedfc8}
+.design-scene{position:absolute;inset:15% 4% 16% 25%;display:grid;place-items:center}
+.design-board{width:100%;position:relative}
+.design-board img{display:block;width:100%;height:auto;border-radius:16px;box-shadow:0 20px 60px #746a4920}
+.design-caption{font-family:'Noto Serif TC',serif;font-size:12px;letter-spacing:2px;margin-top:18px;color:#748164;display:flex;justify-content:space-between;gap:12px}
+.design-caption span{font-family:'Noto Sans TC',sans-serif;font-size:9px;color:#96917f;letter-spacing:1px}
+@media(max-width:900px){.design-scene{inset:32% 5% 20%}.view-mode{margin-left:auto}.header-note{display:none}}
+@media(max-width:560px){header{gap:8px}.brand{gap:8px;font-size:17px;letter-spacing:1px}.brand small{font-size:6px;letter-spacing:1px}.brand-icon{font-size:30px;padding:0 5px 4px}.view-mode button{padding:7px 8px;font-size:9px;letter-spacing:0}.round-button{height:30px;width:30px;font-size:18px;margin-left:0}.design-scene{inset:32% 5% 22%}.design-caption{font-size:10px;letter-spacing:1px;display:block;line-height:2}.design-caption span{display:block;font-size:8px}nav button{padding:10px 7px;font-size:8px;gap:3px}nav button>span{font-size:13px}}
