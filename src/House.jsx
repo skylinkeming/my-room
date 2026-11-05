@@ -124,7 +124,7 @@ function Living({night}){return <group name="living-room">
 </group>
 <group name="oval-coffee-table" position={[3.15,0,.6]}><Cyl p={[0,.3,0]} r={.43} h={.6}/><group scale={[1.15,1,.85]}><Cyl p={[0,.66,0]} r={.82} h={.14}/></group><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
 <TV/>
-<Cyl p={[6,.33,2.8]} r={.35} h={.66}/><TableLamp p={[6,.67,2.8]} night={night}/>
+<group name="sofa-side-table"><Cyl p={[6,.33,2.8]} r={.35} h={.66}/><TableLamp p={[6,.67,2.8]} night={night}/></group>
 <FloorLamp p={[7,0,-1.1]} night={night}/>
 {/* Sideboard is against the right wall, away from the doorway. */}
 <group name="sideboard" position={[7.32,0,-1.55]} rotation={[0,-Math.PI/2,0]}>
@@ -132,7 +132,7 @@ function Living({night}){return <group name="living-room">
 <Vase p={[-.6,1.09,0]} flowers/><TableLamp p={[.5,1.09,0]} night={night}/>
 <Art p={[0,2.1,-.34]} botanical/>
 </group>
-<Plant p={[5.5,0,5.6]} size={1.5} tall/>
+<group name="living-room-plant"><Plant p={[5.5,0,5.6]} size={1.5} tall/></group>
 </group>}
 function Pendant({night}){return <group name="dining-pendant" position={[3.15,0,-2.25]}>
 <Cyl p={[0,3.3,0]} r={.1} h={.06} c="#544c39"/><Cyl p={[0,2.94,0]} r={.012} h={.7} c="#544c39"/>
