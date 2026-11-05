@@ -200,6 +200,9 @@ export default function House({night,showLabels,doorOpen,onDoorToggle}){
 <Box name="foundation" p={[0,-.22,0]} s={[16.2,.4,13.2]} c="#c5a47b" r={.1}/>
 {boards.map(({x,c},i)=><group key={i}>{[0,1,2,3].map(j=><Box key={j} p={[x,.005,-4.85+j*3.23]} s={[.342,.07,3.215]} c={c} r={.005} wood/>)}</group>)}
 <Box p={[0,1.61,-6.45]} s={[16,3.2,.16]} c="#eee3cc"/>
+{/* Restore the full front facade; the garden exit remains in the right wall. */}
+<Box name="front-exterior-wall" p={[0,1.61,6.45]} s={[16,3.2,.16]} c="#eee3cc"/>
+<Box p={[-3.95,.14,6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[3.95,.14,6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/>
 <WindowAndLandscape night={night}/>
 <Box p={[7.9,1.61,-3.38]} s={[.16,3.2,6.14]} c="#eee3cc"/>
 {/* Full-height partition with a 1.4 m clear doorway near the front. TV ends at z=1.95. */}
