@@ -1,168 +1,89 @@
-import React, {useEffect,useLayoutEffect,useMemo,useRef} from 'react';
-import {useFrame,useThree} from '@react-three/fiber';
+import React, {useEffect,useMemo} from 'react';
 import {Html} from '@react-three/drei';
 import * as THREE from 'three';
+import {Batch,Block,Rod,Curve,WickerChair,RoofTiles,WallLantern} from './CottageDetails.jsx';
 
-const level=-.43;
-function Block({p,s,c='#b6ae96',rot}){return <mesh position={p} rotation={rot} castShadow receiveShadow><boxGeometry args={s}/><meshStandardMaterial color={c} roughness={.9}/></mesh>}
-function Ellipsoid({p,s,c='#7b875b'}){return <mesh position={p} scale={s} castShadow receiveShadow><icosahedronGeometry args={[1,2]}/><meshStandardMaterial color={c} roughness={1}/></mesh>}
-function Pole({p,h,r=.04,c='#866a45',rot}){return <mesh position={p} rotation={rot} castShadow><cylinderGeometry args={[r*.8,r,h,8]}/><meshStandardMaterial color={c} roughness={.9}/></mesh>}
-function CurveRail({points,c='#826448',r=.055}){const curve=useMemo(()=>new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),[points]);return <mesh castShadow><tubeGeometry args={[curve,24,r,6,false]}/><meshStandardMaterial color={c} roughness={.85}/></mesh>}
-
-// Instancing keeps the perimeter's stones and planted beds inexpensive to draw.
-function Stones({items,name='garden-stones'}){const ref=useRef();useLayoutEffect(()=>{const d=new THREE.Object3D();items.forEach((s,i)=>{d.position.set(...s.p);d.scale.set(...s.s);d.rotation.set(.1,i*1.71,.08);d.updateMatrix();ref.current.setMatrixAt(i,d.matrix);ref.current.setColorAt(i,new THREE.Color(s.c??(i%2?'#979b88':'#afb0a0')))});ref.current.instanceMatrix.needsUpdate=true;ref.current.instanceColor.needsUpdate=true;ref.current.computeBoundingSphere()},[items]);return <instancedMesh ref={ref} name={name} args={[null,null,items.length]} castShadow receiveShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial roughness={1}/></instancedMesh>}
-function Foliage({p,s,c,needle=false}){
- const ref=useRef(),count=needle?240:180;
- useLayoutEffect(()=>{const d=new THREE.Object3D();for(let i=0;i<count;i++){
-  const a=i*2.399963,yy=1-2*(i+.5)/count,rr=Math.sqrt(1-yy*yy),rad=.55+.45*((i*17%101)/101);
-  d.position.set(Math.cos(a)*rr*rad,yy*rad,Math.sin(a)*rr*rad);d.rotation.set(i*.7,i*1.3,i*.4);d.scale.set(needle?.1:.08,needle?.018:.025,needle?.035:.07);d.updateMatrix();ref.current.setMatrixAt(i,d.matrix);ref.current.setColorAt(i,new THREE.Color(c).multiplyScalar(.85+(i%7)*.045));
- }ref.current.instanceMatrix.needsUpdate=true;ref.current.instanceColor.needsUpdate=true;ref.current.computeBoundingSphere()},[c,needle,count]);
- return <group position={p} scale={s}><instancedMesh ref={ref} args={[null,null,count]} castShadow receiveShadow><icosahedronGeometry args={[1,0]}/><meshStandardMaterial roughness={1}/></instancedMesh></group>;
+const ground=-.43;
+const colors={rose:['#c88d8f','#dfa6a4','#ecc7bc'],hydrangea:['#a9b7d0','#829fc7','#dce1cf','#f0e7cf'],leaf:['#61774f','#7e8b5b','#929967']};
+function makeLawn(){const n=256,data=new Uint8Array(n*n*4);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const h=Math.sin(x*12.9+y*78.2)*43758.5,noise=h-Math.floor(h),v=7*Math.sin(x*.027+Math.cos(y*.035))+4*Math.sin(y*.064);const i=(y*n+x)*4;data[i]=112+v+noise*5;data[i+1]=129+v+noise*5;data[i+2]=68+v+noise*4;data[i+3]=255}const t=new THREE.DataTexture(data,n,n);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t}
+function Lawn(){const t=useMemo(makeLawn,[]);useEffect(()=>()=>t.dispose(),[t]);return <group><Block name="garden-foundation" p={[0,-.72,3.5]} s={[38,.52,33]} c="#9f9f76"/><mesh name="cottage-lawn" rotation={[-Math.PI/2,0,0]} position={[0,ground,3.5]} receiveShadow><planeGeometry args={[37.9,32.9]}/><meshStandardMaterial map={t} bumpMap={t} bumpScale={.012} roughness={1}/></mesh></group>}
+export function makeBrickPath(){return new THREE.CatmullRomCurve3([[10.7,ground+.06,7.15],[11.7,ground+.06,9.4],[9.7,ground+.06,12.5],[11.8,ground+.06,16],[12,ground+.06,19.8]].map(p=>new THREE.Vector3(...p)))}
+function BrickPath(){const curve=useMemo(makeBrickPath,[]);const {bricks,mortar}=useMemo(()=>{
+ const a=[],n=Math.ceil(curve.getLength()/.24),pos=[],idx=[];
+ for(let row=0;row<=n;row++){const t=row/n,p=curve.getPointAt(t),d=curve.getTangentAt(t),theta=Math.atan2(d.x,d.z);for(const side of [-1,1])pos.push(p.x+d.z*side*.85,p.y-.027,p.z-d.x*side*.85);if(row<n){const k=row*2;idx.push(k,k+2,k+1,k+1,k+2,k+3)}
+ if(row<n)for(let col=0;col<5;col++){const offset=(col-2)*.325+(row%2?.04:-.04);a.push({p:[p.x+d.z*offset,p.y,p.z-d.x*offset],s:[.307,.055,.215],rot:[0,theta,0],c:['#b57f60','#c18a6b','#a97155','#c08b6e','#b28165'][(row*3+col)%5]})}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();return{bricks:a,mortar:g};
+ },[curve]);useEffect(()=>()=>mortar.dispose(),[mortar]);return <group name="curved-brick-path"><mesh geometry={mortar} receiveShadow><meshStandardMaterial color="#d5c4a7" roughness={1} side={THREE.DoubleSide}/></mesh><Batch items={bricks} name="red-brick-pavers"/></group>}
+function Terrace({night}){const paving=useMemo(()=>{const a=[];for(let z=0;z<9;z++)for(let x=0;x<8;x++)a.push({p:[8.15+x*.69,ground+.42,1.02+z*.69],s:[.665,.08,.665],c:['#c9b89a','#d6c4a6','#bfae91','#d0bd9d'][(x*3+z)%4]});return a},[]);return <group name="stone-tea-terrace">
+<Block p={[10.6,ground+.25,3.8]} s={[5.8,.3,6.8]} c="#b9a58a"/><Batch items={paving} name="limestone-patio-pavers"/>
+<Block p={[10.7,ground+.22,7.25]} s={[2.5,.22,.4]} c="#bbaa8c"/><Block p={[10.7,ground+.1,7.6]} s={[2.7,.16,.35]} c="#c9b99c"/>
+<WickerChair p={[10.45,ground+.47,3]} rot={-.45}/><WickerChair p={[12.25,ground+.47,4.55]} rot={Math.PI*.8}/>
+<group position={[11.15,ground+.47,4]}>
+<Rod a={[0,0,0]} b={[0,.7,0]} r={.045} c="#62543f"/>{[0,1,2].map(i=><Rod key={i} a={[0,.18,0]} b={[Math.cos(i*2.094)*.35,0,Math.sin(i*2.094)*.35]} r={.023} c="#62543f"/>)}
+<mesh position={[0,.73,0]}><cylinderGeometry args={[.47,.47,.055,32]}/><meshStandardMaterial color="#d9c7a7" roughness={.7}/></mesh>
+{[-.15,.17].map(x=><mesh key={x} position={[x,.81,.12]}><cylinderGeometry args={[.055,.045,.12,16]}/><meshStandardMaterial color="#f5ecda"/></mesh>)}
+<mesh position={[0,.87,-.17]}><sphereGeometry args={[.12,16,12]}/><meshStandardMaterial color="#d0b69b"/></mesh>
+</group><WallLantern p={[7.97,2.1,5.35]} night={night}/>
+</group>}
+function addFlower(p,size,c,petals,leaves,stems,seed=0){
+ stems.push({p:[p[0],p[1]-.15,p[2]],s:[.012,.3,.012],c:'#71804d'});
+ for(let j=0;j<5;j++){const a=j*Math.PI*2/5+seed;petals.push({p:[p[0]+Math.cos(a)*size*.6,p[1]+Math.sin(a)*size*.6,p[2]],s:[size*.6,size*.37,size*.18],rot:[.3*Math.sin(seed),0,a],c})}
+ leaves.push({p:[p[0]+.05,p[1]-.14,p[2]],s:[.09,.022,.04],rot:[0,seed,-.35],c:colors.leaf[seed%3|0]});
 }
-function Pine({p,size=1}){return <group position={p} scale={size}>
-<Pole p={[0,1.2,0]} h={2.4} r={.12} c="#89714d"/>
-{[[.45,1.25,0],[-.45,1.85,.2],[.12,2.5,-.04]].map(([x,y,z],i)=><group key={i}><Pole p={[x/2,y-.15,z/2]} h={.8} r={.05} rot={[0,0,-Math.sign(x)*.85]}/><Foliage needle p={[x,y,z]} s={[.85-i*.1,.32,.65]} c={['#667c50','#73875a','#829065'][i]}/><Foliage needle p={[x+.25,y+.11,z+.12]} s={[.47,.23,.45]} c="#829164"/></group>)}
-</group>}
-function Maple({p,size=1}){const crowns=useMemo(()=>Array.from({length:12},(_,i)=>({x:Math.cos(i*2.4)*(.4+i%3*.15),z:Math.sin(i*2.4)*(.4+i%3*.15),y:2.1+(i%4)*.2})),[]);return <group position={p} scale={size}>
-<Pole p={[0,1.1,0]} h={2.2} r={.09} c="#807052"/>
-<Pole p={[-.3,1.75,0]} h={1.2} r={.045} rot={[0,0,.5]}/><Pole p={[.3,1.65,.15]} h={1.2} r={.04} rot={[.2,0,-.5]}/>
-{crowns.map(({x,y,z},i)=><Foliage key={i} p={[x,y,z]} s={[.65,.2,.5]} c={['#b86b4f','#c88d5a','#ad7953','#d0a06a'][i%4]}/>)}
-</group>}
-function Bamboo({p,count=9}){return <group position={p}>{Array.from({length:count},(_,i)=>{const x=Math.cos(i*2.4)*(i%3*.21),z=Math.sin(i*2.4)*(i%3*.22),h=2.4+(i%4)*.27;return <group key={i}><Pole p={[x,h/2,z]} h={h} r={.045} c="#98a071"/>{[.6,1.2,1.8,2.4].filter(y=>y<h).map(y=><Block key={y} p={[x,y,z]} s={[.1,.025,.1]} c="#b5b38a"/>)}{[0,1,2].map(j=><Ellipsoid key={j} p={[x+(j-1)*.22,h-.4+j*.15,z]} s={[.38,.055,.1]} c="#78885b"/>)}</group>})}</group>}
-function Lantern({p,night=false}){return <group position={p}>
-<Block p={[0,.04,0]} s={[.6,.08,.6]} c="#989c8d"/><Pole p={[0,.35,0]} h={.6} r={.12} c="#aaad9d"/>
-<Block p={[0,.68,0]} s={[.42,.1,.42]} c="#a1a594"/>
-<mesh position={[0,.86,0]}><boxGeometry args={[.25,.3,.25]}/><meshStandardMaterial color="#f6e2ad" emissive="#ffd293" emissiveIntensity={night?2:.1}/></mesh>
-{[-1,1].flatMap(a=>[-1,1].map(b=><Pole key={`${a}${b}`} p={[a*.15,.86,b*.15]} h={.33} r={.025} c="#8b9180"/>))}
-<mesh position={[0,1.1,0]} rotation={[0,Math.PI/4,0]} castShadow><coneGeometry args={[.48,.2,4]}/><meshStandardMaterial color="#969e8b"/></mesh>
-<mesh position={[0,1.28,0]}><sphereGeometry args={[.06,8,6]}/><meshStandardMaterial color="#969e8b"/></mesh>
-{night&&<pointLight position={[0,.9,0]} color="#ffd69b" intensity={1.4} distance={3}/>}
-</group>}
-
-export function makeStream(){return new THREE.CatmullRomCurve3([[17,-.4,-14],[18,-.4,-8],[20,-.4,-1],[20,-.4,7],[19,-.4,14],[20,-.4,22],[24,-.4,29.8]].map(p=>new THREE.Vector3(...p)))}
-function Stream({flowing,night}){
- const curve=useMemo(makeStream,[]), material=useRef(),{invalidate}=useThree();
- const geometry=useMemo(()=>{
- const n=180,positions=[],uv=[],indices=[];
- for(let i=0;i<=n;i++){const t=i/n,p=curve.getPoint(t),d=curve.getTangent(t);const width=.9+.18*Math.sin(t*19);for(const side of [-1,1]){positions.push(p.x-d.z*side*width,p.y,p.z+d.x*side*width);uv.push(t,side*.5+.5)}if(i<n){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2)}}
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
- },[curve]);
- const uniforms=useMemo(()=>({time:{value:0},light:{value:1}}),[]);
- useEffect(()=>{uniforms.light.value=night?.22:1;invalidate()},[night,uniforms,invalidate]);
- useEffect(()=>{if(!flowing)return;const timer=setInterval(()=>{if(document.visibilityState==='visible')invalidate()},125);return()=>clearInterval(timer)},[flowing,invalidate]);
- useEffect(()=>()=>geometry.dispose(),[geometry]);
- useFrame((_,dt)=>{if(flowing&&material.current)material.current.uniforms.time.value+=Math.min(dt,.2)});
- return <mesh name="flowing-stream" geometry={geometry}>
- <shaderMaterial transparent ref={material} uniforms={uniforms} side={THREE.DoubleSide} vertexShader={`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`} fragmentShader={`varying vec2 vUv;uniform float time;uniform float light;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-void main(){
-vec2 grid=vec2(vUv.x*310.,vUv.y*7.);vec2 cell=floor(grid),f=fract(grid)-.5;float h=hash(cell);float pebble=1.-smoothstep(.2,.46,length(f*vec2(.85,1.1)));vec3 rock=mix(vec3(.39,.38,.28),vec3(.67,.64,.49),h);vec3 bed=mix(vec3(.34,.38,.28),rock,pebble);vec3 water=mix(bed,vec3(.35,.52,.43),.35);
-float flow=sin(vUv.x*420.-time*2.2+sin(vUv.y*12.+vUv.x*90.)*.4);float ripple=pow(max(0.,flow),24.)*.07;
-water+=ripple*vec3(.8,.85,.65);float alpha=1.-smoothstep(.38,.5,abs(vUv.y-.5));gl_FragColor=vec4(water*light,alpha);
-#include <tonemapping_fragment>
-#include <colorspace_fragment>
-
-}`} />
- </mesh>;
+function gardenPlantData(){const petals=[],leaves=[],stems=[],heads=[];
+ // Large cohesive borders frame the house and lawn, leaving the center clear.
+ const hydrangeas=[[-7.5,7.3],[-5.9,7.5],[-1.6,7.4],[.2,7.5],[5.4,7.5],[7,7.3],[-15,16],[-13.7,16.5],[1,18],[2.8,18.3],[15,15],[15.4,12],[14,1]];
+ hydrangeas.forEach(([x,z],i)=>{
+ for(let j=0;j<23;j++){const a=j*2.4,y=ground+.15+(j%5)*.025;leaves.push({p:[x+Math.cos(a)*.42,y,z+Math.sin(a)*.4],s:[.22,.055,.12],rot:[.2,a,.3],c:colors.leaf[j%3]})}
+ for(let h=0;h<5;h++){const a=h*2.4,center=[x+Math.cos(a)*.31,ground+.65+(h%2)*.17,z+Math.sin(a)*.29];
+ heads.push({p:center,s:[.18,.18,.18],c:colors.hydrangea[i%4]});for(let k=0;k<23;k++){const theta=k*2.4,yy=1-2*(k+.5)/23,r=Math.sqrt(1-yy*yy)*.22;const p=[center[0]+Math.cos(theta)*r,center[1]+yy*.2,center[2]+Math.sin(theta)*r];addFlower(p,.045,colors.hydrangea[i%4],petals,leaves,stems,k)}}});
+ const lavender=[[-9,8],[-4.2,7.6],[2.5,7.6],[-16.5,15],[-6,18],[5.4,18],[15.2,10],[14.8,2.3]];
+ lavender.forEach(([x,z],i)=>{for(let j=0;j<27;j++){const a=j*2.4,r=.5*Math.sqrt((j+.5)/27),h=.48+(j%7)*.035,xx=x+Math.cos(a)*r,zz=z+Math.sin(a)*r;stems.push({p:[xx,ground+h/2,zz],s:[.012,h,.012],c:'#87906b'});for(let k=0;k<4;k++)petals.push({p:[xx,ground+h-k*.045,zz],s:[.035,.055,.035],c:['#a79cb6','#8c86a4','#b5a3bc'][j%3]})}});
+ // Climbing roses on the facade and arbor rather than isolated flower dots.
+ const vines=[[-7.65,6.75],[-1.7,6.75],[5.8,6.75],[7.9,6.9]];
+ vines.forEach(([x,z],i)=>{for(let j=0;j<40;j++){const y=ground+.25+j*.065,xx=x+Math.sin(j*.6+i)*.25;leaves.push({p:[xx,y,z],s:[.1,.045,.065],rot:[.2,j,.2],c:colors.leaf[j%3]});if(j%3===0)addFlower([xx+.06,y+.02,z+.08],.09,colors.rose[i%3],petals,leaves,stems,j)}});
+ for(let i=0;i<80;i++){const side=i%2?1:-1,y=ground+.15+(i%38)*.082,x=12+side*(1.45-Math.max(0,y-ground-2.3)*.65),z=18.1+Math.sin(i*1.7)*.25;leaves.push({p:[x,y,z],s:[.13,.04,.07],rot:[i,i*.5,0],c:colors.leaf[i%3]});if(i%3===0)addFlower([x,y,z+.08],.095,colors.rose[i%3],petals,leaves,stems,i)}
+ for(let i=0;i<27;i++){const a=i/26*Math.PI;for(const z of [17.8,18.1]){const p=[12-Math.cos(a)*1.5,ground+2.25+Math.sin(a)*.85,z];leaves.push({p,s:[.14,.055,.08],rot:[i,a,0],c:colors.leaf[i%3]});if(i%2===0)addFlower([p[0],p[1]+.06,p[2]+.07],.1,colors.rose[i%3],petals,leaves,stems,i)}}
+ return{petals,leaves,stems,heads};
 }
-function Bridge(){const rails=useMemo(()=>[-.7,.7].map(z=>Array.from({length:15},(_,i)=>{const t=i/14;return [-1.65+t*3.3,.75+.5*Math.sin(t*Math.PI),z]})),[]);return <group name="garden-bridge" position={[19,level+.12,14]}>
-{Array.from({length:21},(_,i)=>{const t=i/20,x=-1.65+t*3.3;return <Block key={i} p={[x,.16+.5*Math.sin(t*Math.PI),0]} s={[.151,.12,1.5]} c={i%2?'#b58e60':'#c19a6c'}/>})}
-{[-1.65,-.82,0,.82,1.65].flatMap(x=>[-.7,.7].map(z=><Pole key={`${x}${z}`} p={[x,.5+.5*Math.sin((x+1.65)/3.3*Math.PI),z]} h={.85} r={.045} c="#8e6b47"/>))}
-{rails.map((points,i)=><CurveRail key={i} points={points}/>)}
+function Flowers(){const data=useMemo(gardenPlantData,[]);return <group name="cottage-flower-borders"><Batch name="hydrangea-heads" kind="petal" items={data.heads}/><Batch name="flower-petals" kind="petal" items={data.petals}/><Batch name="garden-leaves" kind="leaf" items={data.leaves}/><Batch name="flower-stems" items={data.stems}/></group>}
+function Arbor(){const points=useMemo(()=>Array.from({length:21},(_,i)=>{const a=i/20*Math.PI;return[12-Math.cos(a)*1.5,ground+2.25+Math.sin(a)*.85,18.1]}),[]);return <group name="rose-arbor">
+{[-1.5,1.5].flatMap(x=>[-.32,.32].map(z=><Block key={`${x}${z}`} p={[12+x,ground+1.15,18.1+z]} s={[.1,2.3,.1]} c="#b69a70"/>))}
+<Curve points={points} r={.065}/><Curve points={points.map(p=>[p[0],p[1],p[2]-.6])} r={.065}/>
+{[0,1,2,3,4,5,6].map(i=><Rod key={i} a={[10.5+i*.5,ground+2.25+Math.sin(i/6*Math.PI)*.85,17.5]} b={[10.5+i*.5,ground+2.25+Math.sin(i/6*Math.PI)*.85,18.1]} r={.045}/>)}
+<group name="garden-gate" position={[10.7,ground,18.3]} rotation={[0,-.2,0]}>
+{Array.from({length:9},(_,i)=><Block key={i} p={[i*.27,.6,0]} s={[.13,1.15,.07]} c="#aa8c61"/>)}
+<Block p={[1.08,.28,-.03]} s={[2.35,.09,.07]} c="#947650"/><Block p={[1.08,.9,-.03]} s={[2.35,.09,.07]} c="#947650"/>
+</group>
 </group>}
-function Basin(){return <group name="tsukubai-basin" position={[22.8,level,22]}>
-<Ellipsoid p={[0,.3,0]} s={[.6,.4,.55]} c="#a3aa94"/>
-<mesh position={[0,.65,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.32,24]}/><meshStandardMaterial color="#70998a" roughness={.2}/></mesh>
-<Pole p={[-.6,.65,0]} h={1.3} r={.04} c="#a6a477"/>
-<Pole p={[-.34,1.23,0]} h={.65} r={.04} c="#a6a477" rot={[0,0,Math.PI/2]}/>
-<Block p={[-.09,.95,0]} s={[.014,.48,.014]} c="#b6d7c8"/>
+function Boundary(){const pickets=useMemo(()=>{const a=[];for(let i=0;i<139;i++){const x=-18.5+i*.267;if(x>10.4&&x<13.6)continue;a.push({p:[x,ground+.57,18.4],s:[.105,1.05,.06],c:'#e3ddc8'})}for(let i=0;i<104;i++)a.push({p:[-18.5,ground+.57,-12+i*.295],s:[.06,1.05,.105],c:'#e3ddc8'});return a},[]);return <group name="country-boundary">
+<Batch kind="picket" items={pickets} name="cream-picket-fence"/>
+<Block p={[-4.15,ground+.32,18.4]} s={[28.7,.07,.065]} c="#d2c8b0"/><Block p={[-4.15,ground+.83,18.4]} s={[28.7,.07,.065]} c="#d2c8b0"/>
+<Block p={[16.1,ground+.32,18.4]} s={[5,.07,.065]} c="#d2c8b0"/><Block p={[16.1,ground+.83,18.4]} s={[5,.07,.065]} c="#d2c8b0"/>
+<Block p={[-18.5,ground+.32,3.3]} s={[.065,.07,30.6]} c="#d2c8b0"/><Block p={[-18.5,ground+.83,3.3]} s={[.065,.07,30.6]} c="#d2c8b0"/>
+<Block p={[0,ground+.4,-12.5]} s={[37.5,.8,.35]} c="#bbae94"/>
 </group>}
-function Gravel(){return <group name="raked-gravel" position={[-20.5,level+.018,3.8]}>
-<mesh rotation={[-Math.PI/2,0,0]} scale={[1,.8,1]}><circleGeometry args={[2.4,64]}/><meshStandardMaterial color="#c6c2ad" roughness={1}/></mesh>
-{Array.from({length:12},(_,i)=><mesh key={i} rotation={[-Math.PI/2,0,.25]} position={[0,.018,0]} scale={[1,.7,1]}><torusGeometry args={[.4+i*.15,.009,3,64]}/><meshStandardMaterial color="#a9aa96"/></mesh>)}
-<Ellipsoid p={[0,.18,0]} s={[.65,.55,.4]} c="#7f8b79"/><Ellipsoid p={[-.55,.12,.25]} s={[.36,.29,.3]} c="#a0a593"/><Ellipsoid p={[.6,.1,.4]} s={[.32,.22,.28]} c="#989e89"/>
+function Tree({p,size=1}){const {leaves,branches}=useMemo(()=>{const leaves=[],branches=[];for(let i=0;i<13;i++){const a=i*2.4,y=1.4+i*.12,end=[Math.cos(a)*(1+i%3*.25),2.5+(i%4)*.25,Math.sin(a)*(1+i%3*.25)];branches.push([[0,y,0],end]);for(let j=0;j<60;j++){const theta=j*2.4,yy=1-2*(j+.5)/60,r=Math.sqrt(1-yy*yy)*.65;leaves.push({p:[end[0]+Math.cos(theta)*r,end[1]+yy*.45,end[2]+Math.sin(theta)*r],s:[.1,.022,.036],rot:[j*.3,theta,.4],c:['#7c8964','#9ba07c','#687a56'][j%3]})}}return{leaves,branches}},[]);return <group name="olive-tree" position={p} scale={size}>
+<Curve points={[[0,0,0],[.1,1,0],[-.1,2,0],[.07,3,.1]]} r={.1} c="#817051"/>
+{branches.map(([a,b],i)=><Rod key={i} a={a} b={b} r={.034} c="#817051"/>)}<Batch kind="leaf" items={leaves}/>
 </group>}
-// A lawn with softly varying grass color, shared across the expanded property.
-function Lawn(){
- const texture=useMemo(()=>{
-  const n=512,data=new Uint8Array(n*n*4);
-  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-   const a=Math.sin(x*12.9898+y*78.233)*43758.5453,noise=a-Math.floor(a);
-   const wave=Math.sin(x*.018+Math.cos(y*.016))*8+Math.sin(y*.027)*5;
-   const i=(y*n+x)*4;data[i]=119+wave+noise*5;data[i+1]=136+wave+noise*5;data[i+2]=72+wave+noise*4;data[i+3]=255;
-  }
-  const t=new THREE.DataTexture(data,n,n);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,1);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;
- },[]);
- useEffect(()=>()=>texture.dispose(),[texture]);
- return <mesh name="open-lawn" rotation={[-Math.PI/2,0,0]} position={[0,level+.005,7]} receiveShadow><planeGeometry args={[51.8,45.8]}/><meshStandardMaterial map={texture} bumpMap={texture} bumpScale={.012} roughness={1}/></mesh>;
-}
-function Branch({from,to,r=.04}){const {mid,q,length}=useMemo(()=>{const a=new THREE.Vector3(...from),b=new THREE.Vector3(...to),d=b.clone().sub(a);return{mid:a.add(b).multiplyScalar(.5),q:new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),length:d.length()}},[from,to]);return <mesh position={mid} quaternion={q} castShadow><cylinderGeometry args={[r*.5,r,length,7]}/><meshStandardMaterial color="#796044" roughness={1}/></mesh>}
-// Individual blossom clusters and petals avoid the solid spherical tree canopies.
-function Cherry({p,size=1,name}){
- const blossoms=useRef(),petals=useRef();
- const {branches,flowers,fallen}=useMemo(()=>{
-  const branches=[],flowers=[],fallen=[];
-  for(let i=0;i<11;i++){
-   const a=i*2.399,origin=[.13*Math.sin(i),1.5+i*.12,0],end=[Math.cos(a)*(1.25+i%3*.25),2.8+(i%4)*.32,Math.sin(a)*(1.1+i%3*.2)];
-   branches.push({from:origin,to:end,r:.055-i*.002});
-   for(let j=0;j<4;j++){
-    const t=.48+j*.17,base=origin.map((v,k)=>v+(end[k]-v)*t),tip=[base[0]+Math.cos(a+.8)*.46,base[1]+.25,base[2]+Math.sin(a+.8)*.46];
-    branches.push({from:base,to:tip,r:.016});
-    for(let k=0;k<16;k++){const b=k*2.4+i,rad=.06+(k%5)*.055;flowers.push({p:[tip[0]+Math.cos(b)*rad,tip[1]+Math.sin(k*1.7)*.16,tip[2]+Math.sin(b)*rad],s:.037+(k%3)*.012,c:['#f6ded7','#efc3cc','#f9e8df','#e7b2bf'][k%4]})}
-   }
-  }
-  for(let i=0;i<95;i++){const a=i*2.4,rad=Math.sqrt((i+.5)/95)*2.1;fallen.push({p:[Math.cos(a)*rad,.016,Math.sin(a)*rad],s:[.025,.006,.016]})}
-  return{branches,flowers,fallen};
- },[]);
- useLayoutEffect(()=>{
-  const d=new THREE.Object3D();flowers.forEach((f,i)=>{for(let j=0;j<5;j++){const a=j*Math.PI*2/5+i*.3,k=i*5+j;d.position.set(f.p[0]+Math.cos(a)*f.s*.65,f.p[1]+Math.sin(a)*f.s*.65,f.p[2]);d.scale.set(f.s*.66,f.s*.38,f.s*.2);d.rotation.set(.15*Math.sin(i),.2*Math.cos(i),a);d.updateMatrix();blossoms.current.setMatrixAt(k,d.matrix);blossoms.current.setColorAt(k,new THREE.Color(f.c))}});blossoms.current.instanceMatrix.needsUpdate=true;blossoms.current.instanceColor.needsUpdate=true;blossoms.current.computeBoundingSphere();
-  fallen.forEach((f,i)=>{d.position.set(...f.p);d.scale.set(...f.s);d.rotation.set(0,i*2.4,0);d.updateMatrix();petals.current.setMatrixAt(i,d.matrix)});petals.current.instanceMatrix.needsUpdate=true;petals.current.computeBoundingSphere();
- },[flowers,fallen]);
- return <group name={name} position={p} scale={size}>
- <Branch from={[0,0,0]} to={[.12,1.95,0]} r={.12}/>
- {branches.map((b,i)=><Branch key={i} {...b}/>)}
- <instancedMesh ref={blossoms} args={[null,null,flowers.length*5]} castShadow><icosahedronGeometry args={[1,1]}/><meshStandardMaterial roughness={.95}/></instancedMesh>
- <instancedMesh ref={petals} args={[null,null,fallen.length]}><icosahedronGeometry args={[1,0]}/><meshStandardMaterial color="#efd1d4" roughness={1}/></instancedMesh>
- </group>;
-}
-function Bench(){return <group name="maple-bench" position={[21.6,level,-10.5]}>
-{[-.85,.85].map(x=><Block key={x} p={[x,.24,0]} s={[.1,.48,.55]} c="#94704a"/>)}
-{[-.2,0,.2].map(z=><Block key={z} p={[0,.52,z]} s={[2.15,.09,.18]} c="#c39c6b"/>)}
-{[-1,1].map(x=><Block key={x} p={[x,.85,-.29]} s={[.09,.8,.09]} c="#94704a"/>)}
-{[.78,1.02].map(y=><Block key={y} p={[0,y,-.29]} s={[2.15,.15,.07]} c="#c39c6b"/>)}
+function Bench(){return <group name="country-bench" position={[14.7,ground,1.3]} rotation={[0,-Math.PI/2,0]}>
+{[-.85,.85].flatMap(x=>[-.23,.23].map(z=><Rod key={`${x}${z}`} a={[x,0,z]} b={[x,.55,z]} r={.04}/>))}
+{[-.22,0,.22].map(z=><Block key={z} p={[0,.55,z]} s={[2.1,.08,.18]} c="#b59161"/>)}
+{[-1,1].map(x=><Rod key={x} a={[x,.4,-.25]} b={[x,1.2,-.25]} r={.04}/>)}
+{[.8,1.02].map(y=><Block key={y} p={[0,y,-.25]} s={[2.1,.13,.07]} c="#b59161"/>)}
 </group>}
-export default function Garden({night,flowing,showLabels}){
- const curve=useMemo(makeStream,[]);
- const {banks,path,moss}=useMemo(()=>{
-  const banks=[],path=[],moss=[];
-  // Sparse asymmetric rocks, with long quiet grassy banks between groups.
-  for(let i=0;i<34;i++){
-   if(i%5===2)continue;
-   const t=(i+.35)/34,p=curve.getPoint(t),d=curve.getTangent(t),sign=i%2?1:-1,w=1.04+.18*Math.sin(t*19);
-   banks.push({p:[p.x-d.z*w*sign,level-.015,p.z+d.x*w*sign],s:[.23+(i%4)*.07,.12+(i%3)*.05,.25+(i%3)*.06],c:i%3?'#a3a38c':'#b5b09a'});
-   if(i%4===0)moss.push({p:[p.x-d.z*1.6*sign,level-.05,p.z+d.x*1.6*sign],s:[.8,.12,.6],c:'#8c9b65'});
-  }
-  const approach=new THREE.CatmullRomCurve3([[10.3,level+.05,3.7],[11.4,level+.05,7],[13.8,level+.05,10.6],[17.4,level+.05,14]].map(p=>new THREE.Vector3(...p)));
-  for(let i=0;i<15;i++){const p=approach.getPoint(i/14);path.push({p:p.toArray(),s:[.38,.065,.3],c:'#c2b69b'})}
-  const far=new THREE.CatmullRomCurve3([[20.7,level+.05,14],[22.6,level+.05,7],[22.2,level+.05,-1],[21.6,level+.05,-9]].map(p=>new THREE.Vector3(...p)));
-  for(let i=0;i<24;i++){const p=far.getPoint(i/23);path.push({p:p.toArray(),s:[.32,.055,.25],c:'#c2b69b'})}
-  return{banks,path,moss};
- },[curve]);
- return <group name="kyoto-garden">
- <Block p={[0,-.7,7]} s={[52,.5,46]} c="#9ca37b"/><Lawn/>
- <Stones items={moss} name="moss-islands"/><Stones items={banks} name="stream-banks"/><Stones items={path} name="garden-path"/>
- <Stream flowing={flowing} night={night}/><Bridge/><Gravel/><Basin/>
- <Pine p={[-22,level,-1]} size={2.1}/>
- <Maple p={[22,level,-12.3]} size={1.65}/><Bench/>
- <Cherry name="cherry-foreground-left" p={[-18,level,24]} size={1.7}/>
- <Cherry name="cherry-middle-left" p={[-13.2,level,17.4]} size={1.55}/>
- <Bamboo p={[-12,level,-14.2]} count={6}/><Bamboo p={[17,level,-14.2]} count={6}/>
- <Lantern p={[-21.8,level,1.4]} night={night}/>
- {/* Low boundary planting is restrained; the central foreground stays empty. */}
- {[-21,-15,-7,1,8,15,22].map((x,i)=><Foliage key={x} p={[x,level+.1,-14.8]} s={[1.4,.24,.55]} c={i%2?'#879662':'#98a274'}/>)}
- <Block p={[0,.35,-15.5]} s={[51,1.5,.16]} c="#e1d6bc"/><Block p={[0,1.14,-15.5]} s={[51,.12,.36]} c="#6b7461"/>
- <Block p={[-25.5,.35,4]} s={[.16,1.5,39]} c="#e1d6bc"/><Block p={[-25.5,1.14,4]} s={[.36,.12,39]} c="#6b7461"/>
- <Block p={[25.5,.35,4]} s={[.16,1.5,39]} c="#e1d6bc"/><Block p={[25.5,1.14,4]} s={[.36,.12,39]} c="#6b7461"/>
- <Html position={[19,1.7,14]} center distanceFactor={26} style={{display:showLabels?'block':'none'}}><div className="room-label">櫻庭・小橋流水 SAKURA GARDEN</div></Html>
- </group>;
-}
+function Shed(){return <group name="garden-shed" position={[14.8,ground,-7.8]}>
+<Block p={[0,1,0]} s={[2.8,2,2.2]} c="#ae9979"/>
+{Array.from({length:13},(_,i)=><Block key={i} p={[-1.3+i*.215,1,1.13]} s={[.2,1.98,.035]} c={i%2?'#ae9776':'#baa485'}/>)}
+<Block p={[.5,.9,1.17]} s={[.76,1.77,.045]} c="#9a8668"/>
+{[-1,1].map(side=><Block key={side} p={[side*.72,2.28,0]} s={[1.65,.12,2.5]} c="#a37454" rot={[0,0,-side*.35]}/>)}
+<Block p={[-.65,1.3,1.18]} s={[.75,.65,.04]} c="#596956"/>
+<Block p={[-.65,1.3,1.21]} s={[.04,.7,.04]} c="#d0bb96"/><Block p={[-.65,1.3,1.21]} s={[.8,.04,.04]} c="#d0bb96"/>
+</group>}
+export default function Garden({night,showLabels,labelPortal}){return <group name="european-cottage-garden">
+<Lawn/><BrickPath/><Terrace night={night}/><Flowers/><Arbor/><Boundary/>
+<Tree p={[-15.6,ground,11.5]} size={1.65}/><Tree p={[-16.4,ground,-6.9]} size={1.8}/><Tree p={[15.9,ground,-10.5]} size={1.25}/>
+<Bench/><Shed/>
+<Html portal={labelPortal} position={[12,3.2,18]} center distanceFactor={25} style={{display:showLabels?'block':'none'}}><div className="room-label">玫瑰花園 COTTAGE GARDEN</div></Html>
+</group>}
