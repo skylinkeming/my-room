@@ -1,7 +1,7 @@
 import React, {useRef,useState,useEffect,Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
-import {OrbitControls,ContactShadows,Html} from '@react-three/drei';
+import {OrbitControls,ContactShadows} from '@react-three/drei';
 import * as THREE from 'three';
 import House from './House.jsx';
 import Garden from './Garden.jsx';
@@ -43,10 +43,11 @@ function App(){
  const [view,setView]=useState('house'),[night,setNight]=useState(false),[labels,setLabels]=useState(false),[reset,setReset]=useState(0);
  const [doorOpen,setDoorOpen]=useState(true),[fireOn,setFireOn]=useState(true);
  const navigate=id=>{setView(id);setReset(n=>n+1)};
- const enterGarden=()=>{setDoorOpen(true);navigate('garden')};
+ const [homeRequest,setHomeRequest]=useState(null);
+ const openHome=id=>setHomeRequest({id,at:performance.now()});
  return <main className={night?'app night':'app'}>
  <header><a className="brand" href="." aria-label="日日小屋首頁"><span className="brand-icon">⌂</span><span>日日小屋<small>LITTLE WARM HOME</small></span></a><span className="header-note">把日子，過成喜歡的樣子。</span><button className="round-button" onClick={()=>setNight(v=>!v)} title="切換日夜">{night?'☾':'☀'}</button></header>
- <HomeHub/>
+ <HomeHub request={homeRequest}/>
  <section className="intro"><div className="eyebrow"><i/> A LITTLE COTTAGE TO CALL HOME</div><h1>住進一點<span>溫柔。</span></h1><p>石牆、花香，還有等你回家的燈。<br/>一座鄉村小屋，一方玫瑰花園。</p><div className="scene-tag"><span>✳</span> 石牆陶瓦 <b>·</b> 玫瑰花園 <b>·</b> 暖光壁爐</div></section>
  <div className="scene" ref={labelPortal}><Suspense fallback={<div className="loading">正在為小屋點亮燈光…</div>}>
  <Canvas frameloop="demand" shadows camera={{position:[13,17,24],fov:36,far:160}} dpr={[1,1.6]}>
@@ -54,8 +55,7 @@ function App(){
  <hemisphereLight args={['#ffeed8','#8a9672',night?.18:.85]}/><ambientLight intensity={night?.45:.8}/>
  <directionalLight position={[-15,20,8]} intensity={night?.4:3.2} color={night?'#cbd8ee':'#fff1d5'} castShadow shadow-mapSize={[2048,2048]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={36} shadow-camera-bottom={-36} shadow-normalBias={.04}/>
  <Garden labelPortal={labelPortal} night={night} showLabels={labels}/>
- <House labelPortal={labelPortal} fireOn={fireOn} night={night} showLabels={labels} doorOpen={doorOpen} onDoorToggle={()=>setDoorOpen(v=>!v)}/>
- <Html portal={labelPortal} position={[11,1,4.8]} center distanceFactor={24} style={{display:(view==='living'||view==='garden'||view==='house'||view==='terrace')?'block':'none'}}><button className="garden-link" onClick={enterGarden}>走進花園 ↗</button></Html>
+ <House onOpenHome={openHome} labelPortal={labelPortal} fireOn={fireOn} night={night} showLabels={labels} doorOpen={doorOpen} onDoorToggle={()=>setDoorOpen(v=>!v)}/>
  <ContactShadows frames={1} position={[0,-.97,0]} opacity={.25} scale={76} blur={2.8} far={10}/>
  <BearResident ref={bearRef} walking={walking} greeting={greeting} onGreet={greet} onStatus={setBearStatus} labelPortal={labelPortal} focused={view==='resident'}/>
  <CameraRig view={view} reset={reset} bearRef={bearRef}/>

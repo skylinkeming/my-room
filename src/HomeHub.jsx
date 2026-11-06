@@ -3,7 +3,7 @@ import useHousehold from './useHousehold.js';
 import {decodeState,records,makeId,chooseMeal,mealCandidates,todayKey} from './householdStore.js';
 import {inviteLink} from './householdCloud.js';
 const tabs=[['messages','留言板','✉'],['tasks','共同清單','✓'],['meals','今天吃什麼','♨']];
-export default function HomeHub(){
+export default function HomeHub({request}){
  const home=useHousehold(),{state,change}=home;
  const [tab,setTab]=useState('messages'),[open,setOpen]=useState(false),[settings,setSettings]=useState(false),[notice,setNotice]=useState('');
  const [text,setText]=useState(''),[title,setTitle]=useState(''),[category,setCategory]=useState('購物'),[taskFilter,setTaskFilter]=useState('待完成');
@@ -11,8 +11,8 @@ export default function HomeHub(){
  const [name,setName]=useState(state.profile.name),[url,setUrl]=useState(import.meta.env.VITE_SUPABASE_URL??''),[key,setKey]=useState(import.meta.env.VITE_SUPABASE_ANON_KEY??''),[invite,setInvite]=useState(''),[link,setLink]=useState('');
  const dialog=useRef(),previousFocus=useRef(),closeButton=useRef();
  const messages=records(state,'messages').sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),tasks=records(state,'tasks'),meals=records(state,'meals'),history=records(state,'history').sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
- const unread=messages.filter(m=>m.authorId!==state.profile.id&&!m.readBy?.[state.profile.id]).length;
  const show=id=>{previousFocus.current=document.activeElement;setTab(id);setSettings(false);setOpen(true)};
+ useEffect(()=>{if(request)show(request.id)},[request]);
  const close=()=>{setOpen(false);previousFocus.current?.focus()};
  useEffect(()=>{const code=new URLSearchParams(location.hash.slice(1)).get('home');if(code){previousFocus.current=document.activeElement;setInvite(location.href);setSettings(true);setOpen(true)}},[]);
  useEffect(()=>{if(!open)return;closeButton.current?.focus();const handler=e=>{if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const items=[...dialog.current.querySelectorAll('button,input,textarea,select,a[href]')].filter(n=>!n.disabled&&n.offsetParent!==null);if(!items.length)return;const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};document.addEventListener('keydown',handler);return()=>document.removeEventListener('keydown',handler)},[open]);
@@ -20,7 +20,7 @@ export default function HomeHub(){
  const run=async action=>{setNotice('');try{await action()}catch(e){setNotice(e.message)}};
  const download=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download=`日日小屋-${todayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(href),1000)};
  const status=!home.connection?'本機保存':({pending:'等待同步',syncing:'同步中…',synced:'已同步',error:'同步暫停'}[home.sync.phase]??'等待同步');
- return <><div className="home-launchers" aria-label="生活小事"><div className="home-launcher-heading"><strong>生活小事</strong><small>點選下方，開始使用</small></div><div className="home-launcher-buttons">{tabs.map(([id,label,icon])=><button key={id} onClick={()=>show(id)}><span>{icon}</span>{label}{id==='messages'&&unread>0&&<b>{unread}</b>}</button>)}</div></div>
+ return <>
  {open&&<div className="home-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section className="home-panel" role="dialog" aria-modal="true" aria-labelledby="home-title" ref={dialog}>
  <div className="hub-heading"><div><small>OUR LITTLE EVERYDAY</small><h2 id="home-title">生活小事</h2></div><button ref={closeButton} className="hub-close" aria-label="關閉生活小事" onClick={close}>×</button></div>
  <div className="hub-status"><span>{status}</span><button onClick={()=>{setSettings(v=>!v);setNotice('')}}>{settings?'回到生活小事':'名字與同步設定'}</button></div>

@@ -78,7 +78,7 @@ const BearResident=forwardRef(function BearResident({walking,onGreet,greeting,on
  <group ref={leftLeg} position={[-.33,.55,0]}><Plush p={[0,-.25,0]} s={[.27,.31,.32]} material={material}/></group>
  <group ref={rightLeg} position={[.33,.55,0]}><Plush p={[0,-.25,0]} s={[.27,.31,.32]} material={material}/></group>
  </group>
- <Html portal={labelPortal} position={[0,1.85,0]} center distanceFactor={10} style={{display:greeting>0&&wave.current>0?'block':'none',pointerEvents:'none'}}><div className="resident-bubble">嗨，我住進來了 ♡</div></Html>
+ <Html portal={labelPortal} position={[0,1.85,0]} center distanceFactor={10} style={{display:greeting>0&&wave.current>0?'block':'none',pointerEvents:'none'}}><div className="resident-bubble">Hi~~你回來了~~</div></Html>
  </group>;
 });
 export default BearResident;

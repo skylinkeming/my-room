@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
 import {RoundedBox, Html} from '@react-three/drei';
 import * as THREE from 'three';
+import {HouseholdObject,DiningAction} from './HouseholdObjects.jsx';
 import {FrontFacade,RoofTiles,Fireplace,FrenchDoors,CountryWindow,Curve,WallLantern} from './CottageDetails.jsx';
 
 const oak='#c39764', cream='#f2eadb', sage='#919b77', brass='#9b7948';
@@ -18,8 +19,8 @@ function surfaceTexture(wood=false){
 function floralTexture(){const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#efe5d4';ctx.fillRect(0,0,256,256);for(let i=0;i<18;i++){const x=(i*73+23)%256,y=(i*47+31)%256;ctx.strokeStyle='#899776';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y+10);ctx.lineTo(x-5,y+25);ctx.stroke();for(let j=0;j<5;j++){const a=j*Math.PI*2/5;ctx.fillStyle=i%2?'#c79682':'#d1ac99';ctx.beginPath();ctx.ellipse(x+Math.cos(a)*4,y+Math.sin(a)*4,4,3,a,0,Math.PI*2);ctx.fill()}ctx.fillStyle='#d6bc7e';ctx.beginPath();ctx.arc(x,y,1.5,0,Math.PI*2);ctx.fill()}const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);return t}
 const botanical=floralTexture();
 const grain=surfaceTexture(true), weave=surfaceTexture();
-function Box({p=[0,0,0],s=[1,1,1],c=cream,r=.035,rot,wood=false,fabric=false,floral=false,...rest}){
-  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} map={floral?botanical:null} roughness={fabric?1:wood?.65:.78} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
+function Box({p=[0,0,0],s=[1,1,1],c=cream,r=.035,rot,wood=false,fabric=false,floral=false,emissive=false,...rest}){
+  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} emissive={emissive?'#f8ce8b':'#000000'} emissiveIntensity={emissive?.2:0} map={floral?botanical:null} roughness={fabric?1:wood?.65:.78} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
 }
 function Ball({p=[0,0,0],s=1,c=cream,fabric=false,glow=false}){return <mesh position={p} scale={Array.isArray(s)?s:[s,s,s]} castShadow receiveShadow><sphereGeometry args={[1,20,16]}/><meshStandardMaterial color={c} roughness={.92} emissive={glow?'#ffd298':'#000000'} emissiveIntensity={glow?.65:0} bumpMap={fabric?weave:null} bumpScale={.025}/></mesh>}
 function Cyl({p=[0,0,0],r=.15,h=.3,c=oak,rt,rot}){return <mesh position={p} rotation={rot} castShadow receiveShadow><cylinderGeometry args={[rt??r,r,h,24]}/><meshStandardMaterial color={c} roughness={.75}/></mesh>}
@@ -136,7 +137,7 @@ function Pendant({night}){return <group name="dining-pendant" position={[3.15,0,
 <Ball p={[0,2.44,0]} s={.12} c="#fff0bd"/>
 <pointLight position={[0,2.2,0]} color="#ffd29a" intensity={night?6:1.3} distance={5}/>
 </group>}
-function Kitchen({night}){return <group name="open-kitchen" position={[.4,0,-1]}>
+function Kitchen({night,onOpenHome,labelPortal}){return <group name="open-kitchen" position={[.4,0,-1]}>
 {[.7,1.65,2.6,3.55,4.5].map((x,i)=><group key={x}><Box p={[x,.48,-4.88]} s={[.92,.9,1.02]} c={sage}/><Box p={[x,.99,-4.88]} s={[.96,.12,1.08]} c="#eee5d0"/><Box p={[x,.46,-4.35]} s={[.74,.65,.025]} c="#7e8b6d"/><Box p={[x,.46,-4.327]} s={[.61,.52,.018]} c={sage}/><Box p={[x,.68,-4.3]} s={[.28,.025,.035]} c={brass}/></group>)}
 <Box p={[5.71,1.14,-4.84]} s={[1.12,2.23,1.1]} c="#eee7d6" r={.12}/><Box p={[5.71,1.03,-4.26]} s={[1,.025,.025]} c="#c5bba4"/>{[.72,1.4].map(y=><Box key={y} p={[5.35,y,-4.23]} s={[.04,.32,.04]} c={brass}/>)}
 <Box p={[1.65,.98,-4.6]} s={[.83,.32,.73]} c="#f0eadc" r={.08}/><Box p={[1.65,1.15,-4.78]} s={[.65,.035,.5]} c="#b6baa9" r={.09}/><Box p={[1.65,1.24,-5.15]} s={[.035,.36,.035]} c={brass}/><Box p={[1.65,1.4,-5.04]} s={[.035,.035,.26]} c={brass}/>
@@ -146,8 +147,9 @@ function Kitchen({night}){return <group name="open-kitchen" position={[.4,0,-1]}
 <pointLight position={[2.5,1.75,-4.7]} color="#ffd69f" intensity={night?3:.6} distance={4}/>
 <Plant p={[4.28,2.7,-5.16]} size={.65}/><Vase p={[.7,1.06,-4.9]} flowers/>
 {/* Dining table and four chairs leave the kitchen working aisle open. */}
-<group position={[3.15,0,-2.25]}>
-<Legs x={.85} z={.44} h={.82}/><Box p={[0,.88,0]} s={[2.25,.14,1.35]} c={oak} wood r={.22}/>
+<group name="interactive-dining-table" position={[3.15,0,-2.25]} onClick={e=>{e.stopPropagation();onOpenHome('meals')}} onPointerOver={()=>{document.body.style.cursor='pointer'}} onPointerOut={()=>{document.body.style.cursor='auto'}}>
+<DiningAction labelPortal={labelPortal} onOpen={onOpenHome}/>
+<Legs x={.85} z={.44} h={.82}/><Box p={[0,.88,0]} s={[2.25,.14,1.35]} c={oak} emissive wood r={.22}/>
 {[-.64,.64].map(x=><group key={x}><Cyl p={[x,.97,0]} r={.22} h={.025} c="#eee4cb"/><Cyl p={[x,1,0]} r={.16} h={.02} c="#ddd1b5"/></group>)}
 <Vase p={[0,.96,0]} flowers/>
 <Chair p={[-.55,0,-1.06]}/><Chair p={[.55,0,-1.06]}/><Chair p={[-.55,0,1.06]} rot={Math.PI}/><Chair p={[.55,0,1.06]} rot={Math.PI}/>
@@ -184,7 +186,7 @@ function GardenDoor({open,onToggle}){return <group name="garden-exit">
 </group>}
 
 
-export default function House({night,showLabels,doorOpen,onDoorToggle,fireOn=true,labelPortal}){
+export default function House({night,showLabels,doorOpen,onDoorToggle,fireOn=true,labelPortal,onOpenHome}){
  const boards=useMemo(()=>Array.from({length:52},(_,i)=>({x:-7.85+i*.35,c:['#d5b185','#ddbb8f','#d9b88d','#e0bf93'][i%4]})),[]);
  return <group name="little-warm-home">
 <Box name="foundation" p={[1,-.22,0]} s={[18.2,.4,13.2]} c="#c5a47b" r={.1}/>
@@ -208,7 +210,10 @@ export default function House({night,showLabels,doorOpen,onDoorToggle,fireOn=tru
 </group>
 <Box p={[-3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[4.95,.14,-6.33]} s={[9.7,.2,.045]} c="#d9cbb4"/>
 <RoofTiles eastOffset={2}/><group position={[9.3,0,-1.3]} rotation={[0,-Math.PI/2,0]}><group position={[-6.42,0,3.55]}><Fireplace on={fireOn} night={night}/></group></group><WallLantern p={[8.8,2.2,6.69]} night={night}/>
-<Bedroom night={night}/><Living night={night}/><Kitchen night={night}/><group position={[2,0,0]}><GardenDoor open={doorOpen} onToggle={onDoorToggle}/></group>
+<HouseholdObject name="fridge-message-note" position={[6.11,1.53,-5.265]} kind="note" onOpen={onOpenHome} labelPortal={labelPortal}/>
+<HouseholdObject name="desk-message-letter" position={[-7.13,.952,4.25]} rotation={[-Math.PI/2,0,Math.PI/2]} kind="letter" onOpen={onOpenHome} labelPortal={labelPortal}/>
+<HouseholdObject name="entrance-task-board" position={[.17,1.65,5.2]} rotation={[0,Math.PI/2,0]} kind="tasks" onOpen={onOpenHome} labelPortal={labelPortal}/>
+<Bedroom night={night}/><Living night={night}/><Kitchen night={night} onOpenHome={onOpenHome} labelPortal={labelPortal}/><group position={[2,0,0]}><GardenDoor open={doorOpen} onToggle={onDoorToggle}/></group>
 {[[-3.7,2,-1,'寢室・閱讀與工作 BEDROOM'],[3.2,2,.2,'客廳・開放式廚房 LIVING & KITCHEN']].map(([x,y,z,t])=><Html portal={labelPortal} key={t} position={[x,y,z]} center distanceFactor={15} style={{display:showLabels?'block':'none'}}><div className="room-label">{t}</div></Html>)}
 </group>;
 }
