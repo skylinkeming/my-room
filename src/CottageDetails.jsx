@@ -19,9 +19,9 @@ export function Stonework({segments,name='limestone-courses'}){
  }});return items},[segments]);return <Batch name={name} items={stones}/>;
 }
 function TileGeometry(){const pos=[],uv=[],idx=[],n=12;for(let j=0;j<2;j++)for(let i=0;i<=n;i++){const t=i/n;pos.push((t-.5)*.38,.075*Math.sin(t*Math.PI),j*.52-.26);uv.push(t,j);if(j===0&&i<n){const a=i;idx.push(a,a+1,a+n+1,a+1,a+n+2,a+n+1)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
-export function RoofTiles(){const ref=useRef(),geometry=useMemo(TileGeometry,[]);const tiles=useMemo(()=>{const a=[];for(const side of [-1,1])for(let row=0;row<4;row++)for(let col=0;col<34;col++)a.push({p:[side*(8.12-row*.42),3.25+row*.22,-6.55+col*.4],rot:[0,Math.PI/2,-side*.482,'ZYX'],c:['#a96f4f','#bc8561','#c89571','#b57d59'][(row*3+col)%4]});return a},[]);
+export function RoofTiles({eastOffset=0}){const ref=useRef(),geometry=useMemo(TileGeometry,[]);const tiles=useMemo(()=>{const a=[];for(const side of [-1,1])for(let row=0;row<4;row++)for(let col=0;col<34;col++)a.push({p:[side*(8.12-row*.42)+(side>0?eastOffset:0),3.25+row*.22,-6.55+col*.4],rot:[0,Math.PI/2,-side*.482,'ZYX'],c:['#a96f4f','#bc8561','#c89571','#b57d59'][(row*3+col)%4]});return a},[eastOffset]);
  useLayoutEffect(()=>{const d=new THREE.Object3D();tiles.forEach((t,i)=>{d.position.set(...t.p);d.rotation.set(...t.rot);d.updateMatrix();ref.current.setMatrixAt(i,d.matrix);ref.current.setColorAt(i,new THREE.Color(t.c))});ref.current.instanceMatrix.needsUpdate=true;ref.current.instanceColor.needsUpdate=true;ref.current.computeBoundingSphere()},[tiles]);React.useEffect(()=>()=>geometry.dispose(),[geometry]);
- return <group name="terracotta-roof">{[-1,1].map(side=><Block key={side} p={[side*7.5,3.575,0]} s={[1.95,.065,13.8]} c="#a77855" rot={[0,0,-side*.482]}/>)}<instancedMesh ref={ref} args={[geometry,null,tiles.length]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={.9}/></instancedMesh>{[-1,1].map(side=><Rod key={side} a={[side*8.2,3.17,-6.7]} b={[side*8.2,3.17,6.8]} r={.045} c="#8f7454"/>)}</group>;
+ return <group name="terracotta-roof">{[-1,1].map(side=><Block key={side} p={[side*7.5+(side>0?eastOffset:0),3.575,0]} s={[1.95,.065,13.8]} c="#a77855" rot={[0,0,-side*.482]}/>)}<instancedMesh ref={ref} args={[geometry,null,tiles.length]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={.9}/></instancedMesh>{[-1,1].map(side=><Rod key={side} a={[side*8.2+(side>0?eastOffset:0),3.17,-6.7]} b={[side*8.2+(side>0?eastOffset:0),3.17,6.8]} r={.045} c="#8f7454"/>)}</group>;
 }
 export function CountryWindow({p,w=2.7,h=1.8,rot=0,shutters=true}){return <group name="country-window" position={p} rotation={[0,rot,0]}>
 {[-w/2,w/2].map(x=><Block key={x} p={[x,0,0]} s={[.1,h+.12,.13]} c={palette.oak}/>)}
@@ -35,14 +35,14 @@ export function CountryWindow({p,w=2.7,h=1.8,rot=0,shutters=true}){return <group
 {Array.from({length:12},(_,i)=><Block key={i} p={[0,-h/2+.1+i*(h-.15)/12,.065]} s={[.51,.09,.04]} c={i%2?'#899579':'#96a082'} rot={[-.16,0,0]}/>)}
 </group>)}
 </group>}
-export function FrontFacade(){const segments=useMemo(()=>[
-{p:[0,.42,6.55],w:16,h:.8},{p:[0,2.98,6.55],w:16,h:.45},
-{p:[-7.175,1.76,6.55],w:1.65,h:1.9},{p:[-.525,1.76,6.55],w:4.25,h:1.9},{p:[6.4,1.76,6.55],w:3.2,h:1.9},
-],[]);return <group name="front-exterior-wall">
+export function FrontFacade({eastOffset=0}){const segments=useMemo(()=>[
+{p:[eastOffset/2,.42,6.55],w:16+eastOffset,h:.8},{p:[eastOffset/2,2.98,6.55],w:16+eastOffset,h:.45},
+{p:[-7.175,1.76,6.55],w:1.65,h:1.9},{p:[-.525,1.76,6.55],w:4.25,h:1.9},{p:[6.4+eastOffset/2,1.76,6.55],w:3.2+eastOffset,h:1.9},
+],[eastOffset]);return <group name="front-exterior-wall">
 {segments.map((q,i)=><Block key={i} p={[q.p[0],q.p[1],6.45]} s={[q.w,q.h,.18]} c="#d7c7ad"/>)}
 <Stonework segments={segments}/>
 <CountryWindow p={[-4.5,1.75,6.61]} w={3.7}/><CountryWindow p={[3.2,1.75,6.61]} w={3.2}/>
-{[-7.87,7.87].map(x=><group key={x}>{Array.from({length:8},(_,i)=><Block key={i} p={[x,.23+i*.4,6.55]} s={[.43,.36,.26]} c={i%2?'#c8b597':'#e0cfb2'}/>)}</group>)}
+{[-7.87,7.87+eastOffset].map(x=><group key={x}>{Array.from({length:8},(_,i)=><Block key={i} p={[x,.23+i*.4,6.55]} s={[.43,.36,.26]} c={i%2?'#c8b597':'#e0cfb2'}/>)}</group>)}
 </group>}
 export function FrenchDoors({open,onToggle}){return <group name="french-garden-doors">
 {[-1,1].map(side=><group key={side} name={side<0?'french-door-left':'french-door-right'} position={[7.93,0,3.7+side*1.04]} rotation={[0,open?-side*Math.PI*.42:0,0]} onClick={e=>{e.stopPropagation();onToggle()}}>

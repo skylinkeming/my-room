@@ -113,8 +113,8 @@ function TV(){return <group name="living-room-tv" position={[.46,0,.55]} rotatio
 <Plant p={[1.14,.76,.03]} size={.45}/>
 </group>}
 function Living({night}){return <group name="living-room">
-<Rug p={[3.55,.085,.65]} s={[5.65,.045,3.7]} c="#e2d5ba"/>
-<group name="sofa" position={[5.55,0,.6]} rotation={[0,-Math.PI/2,0]}>
+<Rug p={[4.15,.085,.65]} s={[6.85,.045,3.7]} c="#e2d5ba"/>
+<group name="sofa" position={[6.75,0,.6]} rotation={[0,-Math.PI/2,0]}>
 <Legs x={1.25} z={.36} h={.2}/><Box p={[0,.45,0]} s={[3.8,.55,1.25]} c="#d8a58c" r={.18} fabric/>
 <Box p={[0,1,-.5]} s={[3.8,1,.3]} c="#dfb096" r={.14} fabric/>
 {[-1.8,1.8].map(x=><Box key={x} p={[x,.72,0]} s={[.3,.78,1.3]} c="#e2b49a" r={.12} fabric/>)}
@@ -122,16 +122,11 @@ function Living({night}){return <group name="living-room">
 {[[-1.05,'#f2e8d3'],[-.35,'#a0a77d'],[1,'#f2e8d3']].map(([x,c])=><Box key={x} p={[x,1.07,-.2]} s={[.57,.55,.18]} c={c} r={.09} rot={[-.15,0,x*.12]} fabric floral={x!==-.35}/>)}
 <Box p={[1.15,.93,.27]} s={[.55,.07,.7]} c="#ede1c7" fabric/>
 </group>
-<group name="oval-coffee-table" position={[3.15,0,.6]}><Cyl p={[0,.3,0]} r={.43} h={.6}/><group scale={[1.15,1,.85]}><Cyl p={[0,.66,0]} r={.82} h={.14}/></group><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
+<group name="oval-coffee-table" position={[3.75,0,.6]}><Cyl p={[0,.3,0]} r={.43} h={.6}/><group scale={[1.15,1,.85]}><Cyl p={[0,.66,0]} r={.82} h={.14}/></group><Vase p={[-.16,.73,-.14]}/><Box p={[.18,.75,.26]} s={[.37,.045,.26]} c="#e2dcc3"/><Cyl p={[.42,.8,.1]} r={.07} h={.13} c="#eee2c6"/></group>
 <TV/>
-<group name="sofa-side-table"><Cyl p={[6,.33,2.8]} r={.35} h={.66}/><TableLamp p={[6,.67,2.8]} night={night}/></group>
-<FloorLamp p={[7,0,-1.1]} night={night}/>
-{/* Sideboard is against the right wall, away from the doorway. */}
-<group name="sideboard" position={[7.32,0,-1.55]} rotation={[0,-Math.PI/2,0]}>
-<Box p={[0,.55,0]} s={[2.1,1.05,.65]} c={oak} wood/>{[-.7,0,.7].map(x=><Box key={x} p={[x,.56,.34]} s={[.65,.8,.025]} c="#c79f6d" wood/>)}
-<Vase p={[-.6,1.09,0]} flowers/><TableLamp p={[.5,1.09,0]} night={night}/>
-<Art p={[0,2.1,-.34]} botanical/>
-</group>
+<group name="sofa-side-table"><Cyl p={[7.2,.33,2.8]} r={.35} h={.66}/><TableLamp p={[7.2,.67,2.8]} night={night}/></group>
+<FloorLamp p={[8,0,-2.8]} night={night}/>
+{/* Keep the fireplace wall and refrigerator approach free of cabinets. */}
 <group name="living-room-plant"><Plant p={[5.5,0,5.6]} size={1.5} tall/></group>
 </group>}
 function Pendant({night}){return <group name="dining-pendant" position={[3.15,0,-2.25]}>
@@ -190,16 +185,16 @@ function GardenDoor({open,onToggle}){return <group name="garden-exit">
 
 
 export default function House({night,showLabels,doorOpen,onDoorToggle,fireOn=true,labelPortal}){
- const boards=useMemo(()=>Array.from({length:46},(_,i)=>({x:-7.85+i*.35,c:['#d5b185','#ddbb8f','#d9b88d','#e0bf93'][i%4]})),[]);
+ const boards=useMemo(()=>Array.from({length:52},(_,i)=>({x:-7.85+i*.35,c:['#d5b185','#ddbb8f','#d9b88d','#e0bf93'][i%4]})),[]);
  return <group name="little-warm-home">
-<Box name="foundation" p={[0,-.22,0]} s={[16.2,.4,13.2]} c="#c5a47b" r={.1}/>
+<Box name="foundation" p={[1,-.22,0]} s={[18.2,.4,13.2]} c="#c5a47b" r={.1}/>
 {boards.map(({x,c},i)=><group key={i}>{[0,1,2,3].map(j=><Box key={j} p={[x,.005,-4.85+j*3.23]} s={[.342,.07,3.215]} c={c} r={.005} wood/>)}</group>)}
-<group name="rear-window-wall"><Box p={[0,.7,-6.45]} s={[16,1.4,.16]} c="#eee3cc"/><Box p={[0,2.98,-6.45]} s={[16,.46,.16]} c="#eee3cc"/><Box p={[-3.6,2.07,-6.45]} s={[8.8,1.34,.16]} c="#eee3cc"/><Box p={[5.65,2.07,-6.45]} s={[4.7,1.34,.16]} c="#eee3cc"/><CountryWindow p={[2.05,2.07,-6.56]} w={2.5} h={1.3} rot={Math.PI} shutters={false}/></group>
+<group name="rear-window-wall"><Box p={[1,.7,-6.45]} s={[18,1.4,.16]} c="#eee3cc"/><Box p={[1,2.98,-6.45]} s={[18,.46,.16]} c="#eee3cc"/><Box p={[-3.6,2.07,-6.45]} s={[8.8,1.34,.16]} c="#eee3cc"/><Box p={[6.65,2.07,-6.45]} s={[6.7,1.34,.16]} c="#eee3cc"/><CountryWindow p={[2.05,2.07,-6.56]} w={2.5} h={1.3} rot={Math.PI} shutters={false}/></group>
 {/* Restore the full front facade; the garden exit remains in the right wall. */}
-<FrontFacade/>
-<Box p={[-3.95,.14,6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[3.95,.14,6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/>
+<FrontFacade eastOffset={2}/>
+<Box p={[-3.95,.14,6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[4.95,.14,6.33]} s={[9.7,.2,.045]} c="#d9cbb4"/>
 <WindowAndLandscape night={night}/>
-<Box p={[7.9,1.61,-3.38]} s={[.16,3.2,6.14]} c="#eee3cc"/>
+<Box p={[9.9,1.61,-3.38]} s={[.16,3.2,6.14]} c="#eee3cc"/>
 {/* Full-height partition with a 1.4 m clear doorway near the front. TV ends at z=1.95. */}
 <Box name="bedroom-partition-back" p={[0,1.61,-1.9]} s={[.2,3.2,9.1]} c="#e9dfca"/>
 <Box name="bedroom-partition-front" p={[0,1.61,5.3]} s={[.2,3.2,2.3]} c="#e9dfca"/>
@@ -211,9 +206,9 @@ export default function House({night,showLabels,doorOpen,onDoorToggle,fireOn=tru
 {[.72,1.95].map(y=><Box key={y} p={[.044,y,-.7]} s={[.015,1.08,1.12]} c="#cfab79"/>)}
 <Box p={[.08,1.3,-1.2]} s={[.13,.04,.2]} c={brass}/>
 </group>
-<Box p={[-3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/>
-<RoofTiles/><Fireplace on={fireOn} night={night}/><WallLantern p={[6.8,2.2,6.69]} night={night}/>
-<Bedroom night={night}/><Living night={night}/><Kitchen night={night}/><GardenDoor open={doorOpen} onToggle={onDoorToggle}/>
+<Box p={[-3.95,.14,-6.33]} s={[7.7,.2,.045]} c="#d9cbb4"/><Box p={[4.95,.14,-6.33]} s={[9.7,.2,.045]} c="#d9cbb4"/>
+<RoofTiles eastOffset={2}/><group position={[9.3,0,-1.3]} rotation={[0,-Math.PI/2,0]}><group position={[-6.42,0,3.55]}><Fireplace on={fireOn} night={night}/></group></group><WallLantern p={[8.8,2.2,6.69]} night={night}/>
+<Bedroom night={night}/><Living night={night}/><Kitchen night={night}/><group position={[2,0,0]}><GardenDoor open={doorOpen} onToggle={onDoorToggle}/></group>
 {[[-3.7,2,-1,'寢室・閱讀與工作 BEDROOM'],[3.2,2,.2,'客廳・開放式廚房 LIVING & KITCHEN']].map(([x,y,z,t])=><Html portal={labelPortal} key={t} position={[x,y,z]} center distanceFactor={15} style={{display:showLabels?'block':'none'}}><div className="room-label">{t}</div></Html>)}
 </group>;
 }

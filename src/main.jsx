@@ -13,10 +13,10 @@ const views={
  all:{position:[23,26,38],target:[0,0,3]},
  house:{position:[13,17,24],target:[0,.7,0]},
  bedroom:{position:[-5,14,18],target:[-4.2,.7,0]},
- living:{position:[14,15,20],target:[4,.7,0]},
+ living:{position:[14,15,20],target:[5,.7,0]},
  garden:{position:[23,17,30],target:[8,0,10]},
  resident:{position:[4.5,6.8,9.4],target:[2,.8,3.4]},
- terrace:{position:[20,10,16],target:[10.5,1,4]},
+ terrace:{position:[22,10,16],target:[12.5,1,4]},
 };
 function bearCameraOffset(x){return Math.abs(x)<1?new THREE.Vector3(5.5,5.2,1.6):new THREE.Vector3(x<0?-5.5:5.5,5.8,1.4)}
 function CameraRig({view,reset,bearRef}){
@@ -55,7 +55,7 @@ function App(){
  <directionalLight position={[-15,20,8]} intensity={night?.4:3.2} color={night?'#cbd8ee':'#fff1d5'} castShadow shadow-mapSize={[2048,2048]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={36} shadow-camera-bottom={-36} shadow-normalBias={.04}/>
  <Garden labelPortal={labelPortal} night={night} showLabels={labels}/>
  <House labelPortal={labelPortal} fireOn={fireOn} night={night} showLabels={labels} doorOpen={doorOpen} onDoorToggle={()=>setDoorOpen(v=>!v)}/>
- <Html portal={labelPortal} position={[9,1,4.8]} center distanceFactor={24} style={{display:(view==='living'||view==='garden'||view==='house'||view==='terrace')?'block':'none'}}><button className="garden-link" onClick={enterGarden}>走進花園 ↗</button></Html>
+ <Html portal={labelPortal} position={[11,1,4.8]} center distanceFactor={24} style={{display:(view==='living'||view==='garden'||view==='house'||view==='terrace')?'block':'none'}}><button className="garden-link" onClick={enterGarden}>走進花園 ↗</button></Html>
  <ContactShadows frames={1} position={[0,-.97,0]} opacity={.25} scale={76} blur={2.8} far={10}/>
  <BearResident ref={bearRef} walking={walking} greeting={greeting} onGreet={greet} onStatus={setBearStatus} labelPortal={labelPortal} focused={view==='resident'}/>
  <CameraRig view={view} reset={reset} bearRef={bearRef}/>

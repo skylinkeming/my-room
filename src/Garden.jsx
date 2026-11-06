@@ -7,7 +7,7 @@ const ground=-.43;
 const colors={rose:['#c88d8f','#dfa6a4','#ecc7bc'],hydrangea:['#a9b7d0','#829fc7','#dce1cf','#f0e7cf'],leaf:['#61774f','#7e8b5b','#929967']};
 function makeLawn(){const n=256,data=new Uint8Array(n*n*4);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const h=Math.sin(x*12.9+y*78.2)*43758.5,noise=h-Math.floor(h),v=7*Math.sin(x*.027+Math.cos(y*.035))+4*Math.sin(y*.064);const i=(y*n+x)*4;data[i]=112+v+noise*5;data[i+1]=129+v+noise*5;data[i+2]=68+v+noise*4;data[i+3]=255}const t=new THREE.DataTexture(data,n,n);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t}
 function Lawn(){const t=useMemo(makeLawn,[]);useEffect(()=>()=>t.dispose(),[t]);return <group><Block name="garden-foundation" p={[0,-.72,3.5]} s={[38,.52,33]} c="#9f9f76"/><mesh name="cottage-lawn" rotation={[-Math.PI/2,0,0]} position={[0,ground,3.5]} receiveShadow><planeGeometry args={[37.9,32.9]}/><meshStandardMaterial map={t} bumpMap={t} bumpScale={.012} roughness={1}/></mesh></group>}
-export function makeBrickPath(){return new THREE.CatmullRomCurve3([[10.7,ground+.06,7.15],[11.7,ground+.06,9.4],[9.7,ground+.06,12.5],[11.8,ground+.06,16],[12,ground+.06,19.8]].map(p=>new THREE.Vector3(...p)))}
+export function makeBrickPath(){return new THREE.CatmullRomCurve3([[12.7,ground+.06,7.15],[13.7,ground+.06,9.4],[9.7,ground+.06,12.5],[11.8,ground+.06,16],[12,ground+.06,19.8]].map(p=>new THREE.Vector3(...p)))}
 function BrickPath(){const curve=useMemo(makeBrickPath,[]);const {bricks,mortar}=useMemo(()=>{
  const a=[],n=Math.ceil(curve.getLength()/.24),pos=[],idx=[];
  for(let row=0;row<=n;row++){const t=row/n,p=curve.getPointAt(t),d=curve.getTangentAt(t),theta=Math.atan2(d.x,d.z);for(const side of [-1,1])pos.push(p.x+d.z*side*.85,p.y-.027,p.z-d.x*side*.85);if(row<n){const k=row*2;idx.push(k,k+2,k+1,k+1,k+2,k+3)}
@@ -82,7 +82,7 @@ function Shed(){return <group name="garden-shed" position={[14.8,ground,-7.8]}>
 <Block p={[-.65,1.3,1.21]} s={[.04,.7,.04]} c="#d0bb96"/><Block p={[-.65,1.3,1.21]} s={[.8,.04,.04]} c="#d0bb96"/>
 </group>}
 export default function Garden({night,showLabels,labelPortal}){return <group name="european-cottage-garden">
-<Lawn/><BrickPath/><Terrace night={night}/><Flowers/><Arbor/><Boundary/>
+<Lawn/><BrickPath/><group position={[2,0,0]}><Terrace night={night}/></group><Flowers/><Arbor/><Boundary/>
 <Tree p={[-15.6,ground,11.5]} size={1.65}/><Tree p={[-16.4,ground,-6.9]} size={1.8}/><Tree p={[15.9,ground,-10.5]} size={1.25}/>
 <Bench/><Shed/>
 <Html portal={labelPortal} position={[12,3.2,18]} center distanceFactor={25} style={{display:showLabels?'block':'none'}}><div className="room-label">玫瑰花園 COTTAGE GARDEN</div></Html>

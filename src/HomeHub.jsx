@@ -20,7 +20,7 @@ export default function HomeHub(){
  const run=async action=>{setNotice('');try{await action()}catch(e){setNotice(e.message)}};
  const download=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download=`日日小屋-${todayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(href),1000)};
  const status=!home.connection?'本機保存':({pending:'等待同步',syncing:'同步中…',synced:'已同步',error:'同步暫停'}[home.sync.phase]??'等待同步');
- return <><div className="home-launchers" aria-label="生活小事">{tabs.map(([id,label,icon])=><button key={id} onClick={()=>show(id)}><span>{icon}</span>{label}{id==='messages'&&unread>0&&<b>{unread}</b>}</button>)}</div>
+ return <><div className="home-launchers" aria-label="生活小事"><div className="home-launcher-heading"><strong>生活小事</strong><small>點選下方，開始使用</small></div><div className="home-launcher-buttons">{tabs.map(([id,label,icon])=><button key={id} onClick={()=>show(id)}><span>{icon}</span>{label}{id==='messages'&&unread>0&&<b>{unread}</b>}</button>)}</div></div>
  {open&&<div className="home-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section className="home-panel" role="dialog" aria-modal="true" aria-labelledby="home-title" ref={dialog}>
  <div className="hub-heading"><div><small>OUR LITTLE EVERYDAY</small><h2 id="home-title">生活小事</h2></div><button ref={closeButton} className="hub-close" aria-label="關閉生活小事" onClick={close}>×</button></div>
  <div className="hub-status"><span>{status}</span><button onClick={()=>{setSettings(v=>!v);setNotice('')}}>{settings?'回到生活小事':'名字與同步設定'}</button></div>
