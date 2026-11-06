@@ -27,13 +27,15 @@ function BodyGeometry(){const points=[[.4,.49],[.65,.61],[1,.69],[1.4,.71],[1.8,
  for(let i=0;i<=n;i++){const u=i/n,theta=(u-.5)*Math.PI*2;p.push(Math.sin(theta)*w,y,Math.cos(theta)*.39);uv.push(u,j/m);if(i<n&&j<m){const q=j*(n+1)+i;indices.push(q,q+1,q+n+1,q+1,q+n+2,q+n+1)}}
  }const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
 }
-const headShape={x:.83,y:.7,z:.49,centerY:2.02};
-function faceDepth(x,y,offset=.009){const {x:rx,y:ry,z:rz,centerY}=headShape;return rz*Math.sqrt(Math.max(.001,1-(x/rx)**2-((y-centerY)/ry)**2))+offset}
+// Keep the chin anchored while lengthening the round face vertically.
+const headShape={x:.83,y:.86,z:.49,centerY:2.18};
+const faceY=y=>1.32+(y-1.32)*(headShape.y/.7);
+function faceDepth(x,y,offset=.009){const {x:rx,y:ry,z:rz,centerY}=headShape;return rz*Math.sqrt(Math.max(.001,1-(x/rx)**2-((faceY(y)-centerY)/ry)**2))+offset}
 function roundHeadGeometry(){const g=new THREE.SphereGeometry(1,64,48);g.scale(headShape.x,headShape.y,headShape.z);const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,p.getX(i)/(2*headShape.x)+.5,p.getY(i)/(2*headShape.y)+.5);uv.needsUpdate=true;g.computeBoundingBox();return g}
-function faceStitch(points){return points.map(([x,y])=>[x,y,faceDepth(x,y,.012)])}
+function faceStitch(points){return points.map(([x,y])=>[x,faceY(y),faceDepth(x,y,.012)])}
 function Stitch({points,r=.012}){const curve=useMemo(()=>new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),[points]);return <mesh><tubeGeometry args={[curve,20,r,7,false]}/><meshStandardMaterial color={thread} roughness={1}/></mesh>}
 function Plush({p,s,material,rot,name}){return <mesh name={name} position={p} scale={s} rotation={rot} material={material} castShadow receiveShadow><sphereGeometry args={[1,32,24]}/></mesh>}
-function Nose(){const g=useMemo(()=>{const s=new THREE.Shape();s.moveTo(-.12,.055);s.quadraticCurveTo(0,.075,.12,.055);s.quadraticCurveTo(.1,-.03,0,-.095);s.quadraticCurveTo(-.1,-.03,-.12,.055);const g=new THREE.ExtrudeGeometry(s,{depth:.025,steps:1,bevelEnabled:true,bevelSegments:3,bevelSize:.009,bevelThickness:.006});return g},[]);useEffect(()=>()=>g.dispose(),[g]);return <mesh position={[0,1.99,faceDepth(0,1.99)]} geometry={g}><meshStandardMaterial color={thread} roughness={1}/></mesh>}
+function Nose(){const g=useMemo(()=>{const s=new THREE.Shape();s.moveTo(-.12,.055);s.quadraticCurveTo(0,.075,.12,.055);s.quadraticCurveTo(.1,-.03,0,-.095);s.quadraticCurveTo(-.1,-.03,-.12,.055);const g=new THREE.ExtrudeGeometry(s,{depth:.025,steps:1,bevelEnabled:true,bevelSegments:3,bevelSize:.009,bevelThickness:.006});return g},[]);useEffect(()=>()=>g.dispose(),[g]);return <mesh position={[0,faceY(1.99),faceDepth(0,1.99)]} geometry={g}><meshStandardMaterial color={thread} roughness={1}/></mesh>}
 const BearResident=forwardRef(function BearResident({walking,onGreet,greeting,onStatus,labelPortal,focused=false},ref){
  const root=useRef(),leftArm=useRef(),rightArm=useRef(),leftLeg=useRef(),rightLeg=useRef(),head=useRef(),torso=useRef();
  const state=useRef(createResidentMotion()),wave=useRef(0),elapsed=useRef(0),lastStatus=useRef(''),[hover,setHover]=useState(false);
@@ -67,8 +69,8 @@ const BearResident=forwardRef(function BearResident({walking,onGreet,greeting,on
  <group ref={torso}>
  <mesh name="bear-plush-body" geometry={bodyGeometry} material={material} castShadow receiveShadow/>
  <group ref={head} position={[0,1.45,0]}><group position={[0,-1.45,0]}>
- <mesh name="bear-head" position={[0,2.02,0]} geometry={headGeometry} material={faceMaterial} castShadow receiveShadow/>
- {[-1,1].map(side=><group key={side}><Plush name={side<0?'bear-left-ear':'bear-right-ear'} p={[side*.61,2.61,-.08]} s={[.28,.27,.22]} material={material}/><Plush p={[side*.61,2.61,.115]} s={[.17,.16,.025]} material={faceMaterial}/><mesh name={side<0?'bear-left-eye':'bear-right-eye'} position={[side*.31,2.22,faceDepth(side*.31,2.22)]} rotation={[-.12,side*.22,0]} scale={[.071,.069,.025]}><sphereGeometry args={[1,24,16]}/><meshStandardMaterial color={thread} roughness={1}/></mesh></group>)}
+ <mesh name="bear-head" position={[0,headShape.centerY,0]} geometry={headGeometry} material={faceMaterial} castShadow receiveShadow/>
+ {[-1,1].map(side=><group key={side}><Plush name={side<0?'bear-left-ear':'bear-right-ear'} p={[side*.61,2.93,-.08]} s={[.28,.27,.22]} material={material}/><Plush p={[side*.61,2.93,.115]} s={[.17,.16,.025]} material={faceMaterial}/><mesh name={side<0?'bear-left-eye':'bear-right-eye'} position={[side*.31,faceY(2.22),faceDepth(side*.31,2.22)]} rotation={[-.12,side*.22,0]} scale={[.071,.069,.025]}><sphereGeometry args={[1,24,16]}/><meshStandardMaterial color={thread} roughness={1}/></mesh></group>)}
  <Nose/><Stitch points={faceStitch([[0,1.91],[0,1.8],[0,1.7]])}/>
  <Stitch points={faceStitch([[0,1.7],[-.08,1.64],[-.145,1.57]])}/><Stitch points={faceStitch([[0,1.7],[.08,1.64],[.145,1.57]])}/>
  </group></group>
