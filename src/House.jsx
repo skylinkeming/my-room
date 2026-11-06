@@ -20,7 +20,7 @@ function floralTexture(){const canvas=document.createElement('canvas');canvas.wi
 const botanical=floralTexture();
 const grain=surfaceTexture(true), weave=surfaceTexture();
 function Box({p=[0,0,0],s=[1,1,1],c=cream,r=.035,rot,wood=false,fabric=false,floral=false,emissive=false,...rest}){
-  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} emissive={emissive?'#f8ce8b':'#000000'} emissiveIntensity={emissive?.2:0} map={floral?botanical:null} roughness={fabric?1:wood?.65:.78} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
+  return <RoundedBox position={p} args={s} radius={Math.min(r,...s.map(v=>v/3))} smoothness={3} rotation={rot} castShadow receiveShadow {...rest}><meshStandardMaterial color={c} emissive={emissive?'#f8ce8b':'#000000'} emissiveIntensity={emissive?.08:0} map={floral?botanical:null} roughness={fabric?1:wood?.65:.78} bumpMap={wood?grain:fabric?weave:null} bumpScale={wood?.025:fabric?.035:0}/></RoundedBox>;
 }
 function Ball({p=[0,0,0],s=1,c=cream,fabric=false,glow=false}){return <mesh position={p} scale={Array.isArray(s)?s:[s,s,s]} castShadow receiveShadow><sphereGeometry args={[1,20,16]}/><meshStandardMaterial color={c} roughness={.92} emissive={glow?'#ffd298':'#000000'} emissiveIntensity={glow?.65:0} bumpMap={fabric?weave:null} bumpScale={.025}/></mesh>}
 function Cyl({p=[0,0,0],r=.15,h=.3,c=oak,rt,rot}){return <mesh position={p} rotation={rot} castShadow receiveShadow><cylinderGeometry args={[rt??r,r,h,24]}/><meshStandardMaterial color={c} roughness={.75}/></mesh>}
