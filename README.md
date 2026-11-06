@@ -45,3 +45,9 @@ npm run preview
 `.github/workflows/deploy-pages.yml` 會在推送 `main` 後建置與部署。儲存庫的 **Settings → Pages → Source** 應選擇 **GitHub Actions**。
 
 網站位置：https://skylinkeming.github.io/my-room/
+
+## 生活小事
+
+上方按鈕開啟留言板、共同清單和今天吃什麼。支援留言已讀、事項分類及勾選、餐點最愛與抽選、用餐紀錄。預設在本機瀏覽器保存，設定面板可設定名字及下載／匯入 JSON 備份。
+
+兩支手機同步需自行建立 Supabase 專案，完整操作見 [設定說明](docs/supabase.md)，資料庫設定見 [SQL](supabase/setup.sql)。未完成設定前不會跨裝置同步。

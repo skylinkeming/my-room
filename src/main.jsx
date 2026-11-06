@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import House from './House.jsx';
 import Garden from './Garden.jsx';
 import BearResident from './BearResident.jsx';
+import HomeHub from './HomeHub.jsx';
 import './style.css';
 
 const views={
@@ -45,6 +46,7 @@ function App(){
  const enterGarden=()=>{setDoorOpen(true);navigate('garden')};
  return <main className={night?'app night':'app'}>
  <header><a className="brand" href="." aria-label="日日小屋首頁"><span className="brand-icon">⌂</span><span>日日小屋<small>LITTLE WARM HOME</small></span></a><span className="header-note">把日子，過成喜歡的樣子。</span><button className="round-button" onClick={()=>setNight(v=>!v)} title="切換日夜">{night?'☾':'☀'}</button></header>
+ <HomeHub/>
  <section className="intro"><div className="eyebrow"><i/> A LITTLE COTTAGE TO CALL HOME</div><h1>住進一點<span>溫柔。</span></h1><p>石牆、花香，還有等你回家的燈。<br/>一座鄉村小屋，一方玫瑰花園。</p><div className="scene-tag"><span>✳</span> 石牆陶瓦 <b>·</b> 玫瑰花園 <b>·</b> 暖光壁爐</div></section>
  <div className="scene" ref={labelPortal}><Suspense fallback={<div className="loading">正在為小屋點亮燈光…</div>}>
  <Canvas frameloop="demand" shadows camera={{position:[13,17,24],fov:36,far:160}} dpr={[1,1.6]}>
